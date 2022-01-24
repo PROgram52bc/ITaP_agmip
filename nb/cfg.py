@@ -31,7 +31,7 @@ class Const:
     EMPTY = ''
     NO_DATA_MSG = '''<br>(There's no data to display.)'''
     EXPORT_LINK_PROMPT = "Click here to save file: "
-    TAB_TITLES = ['Welcome', 'Data', 'Selection', 'Visualize', 'Settings']
+    TAB_TITLES = ['Welcome', 'Data Selection', 'Data Aggregation', 'Data Visualization', 'Settings']
     PLOT_TITLE = 'Land-Ocean Temperature Index'
 
     # Welcome tab

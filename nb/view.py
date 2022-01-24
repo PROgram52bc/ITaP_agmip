@@ -2,6 +2,7 @@
 # rcampbel@purdue.edu - 2020-07-14
 
 import ipywidgets as widgets
+from ipyleaflet import Map, Marker, Popup
 from IPython.display import HTML, display, clear_output
 import logging
 
@@ -13,6 +14,7 @@ class View:
 
     def __init__(self):
         # The view's "public" attributes are listed here, with type hints, for quick reference
+        self.hello_btn: widgets.Button
 
         # Filer ("Selection" tab) controls
         self.filter_txt_startyr: widgets.Text
@@ -76,7 +78,7 @@ class View:
         tab_content = []
         tab_content.append(self.welcome_content())
         tab_content.append(self.data_content())
-        tab_content.append(self.selection_content())
+        tab_content.append(self.aggregation_content())
         tab_content.append(self.visualize_content())
         tab_content.append(self.settings_content())
 
@@ -109,8 +111,6 @@ class View:
         content = []
         content.append(self.section(Const.USING_TITLE, Const.USING_TEXT))
         content.append(self.section(Const.SOURCES_TITLE, Const.SOURCES_TEXT))
-        self.hello_btn = widgets.Button(description="Say Hello")
-        content.append(self.section("Testing section", [self.hello_btn]))
         return widgets.VBox(content)
 
     def data_content(self):
@@ -118,7 +118,7 @@ class View:
         self.data_preview_out = widgets.Output()
         return self.section(Const.PREVIEW_SECTION_TITLE, [self.data_preview_out])
 
-    def selection_content(self):
+    def aggregation_content(self):
         '''Create widgets for selection tab content'''
         self.filter_txt_startyr = widgets.Text(description=Const.START_YEAR, value='', placeholder='')
         self.filter_txt_endyr = widgets.Text(description=Const.END_YEAR, value='', placeholder='')
@@ -129,29 +129,34 @@ class View:
         self.filter_btn_refexp = widgets.Button(description=Const.EXPORT_BUTTON, icon='download',
                                                 layout=self.LO20)
         self.filter_out_export = widgets.Output(layout={'border': '1px solid black'})
+
+        self.hello_btn = widgets.Button(description="Aggregate")
+
         content = []
 
-        # Section: Selection criteria
-        section_list = []
-        section_list.append(self.filter_txt_startyr)
-        section_list.append(self.filter_txt_endyr)
-        section_list.append(self.filter_btn_apply)
-        content.append(self.section(Const.CRITERIA_TITLE, section_list))
+        # # Section: Selection criteria
+        # section_list = []
+        # section_list.append(self.filter_txt_startyr)
+        # section_list.append(self.filter_txt_endyr)
+        # section_list.append(self.filter_btn_apply)
+        # content.append(self.section(Const.CRITERIA_TITLE, section_list))
 
-        # Section: Output (with apply button)
-        section_list = []
-        row = []
-        row.append(widgets.HTML('<div style="text-align: right;">'+Const.OUTPUT_PRE+'</div>', layout=self.LO15))
-        row.append(self.filter_ddn_ndisp)
-        row.append(widgets.HTML('<div style="text-align: left;">' + Const.OUTPUT_POST + '</div>', layout=self.LO10))
-        section_list.append(widgets.HBox(row))
-        section_list.append(widgets.HBox([self.filter_output]))  # NOTE Use "layout={'width': '90vw'}" to widen
-        content.append(self.section(Const.OUTPUT_TITLE, section_list))
+        # # Section: Output (with apply button)
+        # section_list = []
+        # row = []
+        # row.append(widgets.HTML('<div style="text-align: right;">'+Const.OUTPUT_PRE+'</div>', layout=self.LO15))
+        # row.append(self.filter_ddn_ndisp)
+        # row.append(widgets.HTML('<div style="text-align: left;">' + Const.OUTPUT_POST + '</div>', layout=self.LO10))
+        # section_list.append(widgets.HBox(row))
+        # section_list.append(widgets.HBox([self.filter_output]))  # NOTE Use "layout={'width': '90vw'}" to widen
+        # content.append(self.section(Const.OUTPUT_TITLE, section_list))
 
-        # Section: Export (download)
-        section_list = []
-        section_list.append(widgets.VBox([self.filter_btn_refexp, self.filter_out_export]))
-        content.append(self.section(Const.EXPORT_TITLE, section_list))
+        # # Section: Export (download)
+        # section_list = []
+        # section_list.append(widgets.VBox([self.filter_btn_refexp, self.filter_out_export]))
+        # content.append(self.section(Const.EXPORT_TITLE, section_list))
+
+        content.append(self.section("Data Aggregation", [self.hello_btn]))
 
         return widgets.VBox(content)
 
