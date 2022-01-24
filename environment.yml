@@ -1,0 +1,22 @@
+name: nbtmpl
+channels:
+  - conda-forge
+  - r
+  - defaults
+dependencies:
+  - r-essentials
+  - r-reshape
+  - r-ncdf4
+  - branca
+  - ipykernel
+  - ipywidgets
+  - jupyterlab
+  - jupyterthemes
+  - matplotlib
+  - pandas
+  - python==3.8
+  - voila
+  - git
+  - pip
+  - pip:
+    - git+https://github.com/jupyter-widgets/ipyleaflet@master
