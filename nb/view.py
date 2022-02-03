@@ -108,15 +108,16 @@ class View:
 
     def welcome_content(self):
         '''Create widgets for introductory tab content'''
+        from nb.cfg import log_handler
         content = []
         content.append(self.section(Const.USING_TITLE, Const.USING_TEXT))
-        content.append(self.section(Const.SOURCES_TITLE, Const.SOURCES_TEXT))
+        content.append(self.section("Log", [log_handler.log_output_widget]))
         return widgets.VBox(content)
 
     def data_content(self):
         '''Show data tab content'''
-        self.data_preview_out = widgets.Output()
-        return self.section(Const.PREVIEW_SECTION_TITLE, [self.data_preview_out])
+        content = []
+        return self.section(Const.PREVIEW_SECTION_TITLE, content)
 
     def aggregation_content(self):
         '''Create widgets for selection tab content'''

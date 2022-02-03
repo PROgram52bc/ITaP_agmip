@@ -17,9 +17,9 @@ class Controller():
         global model, view, logger, Const
         from nb.cfg import model, view, logger, Const
 
-        # Show data preview
-        with view.data_preview_out:
-            display(model.data)
+        # # Show data preview
+        # with view.data_preview_out:
+        #     display(model.data)
 
         # Setup callbacks
         try:

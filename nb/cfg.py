@@ -103,14 +103,17 @@ class NotebookLoggingHandler(logging.Handler):
 
     def __init__(self, log_level):
         logging.Handler.__init__(self)
-        self.setFormatter(logging.Formatter('%(message)s (%(filename_lineno)s)'))
+        self.setFormatter(logging.Formatter('[%(levelname)s] %(message)s (%(filename_lineno)s)'))
         self.setLevel(log_level)
         self.log_output_widget = widgets.Output()
 
-    def emit(self, message):
+    def emit(self, record):
         """Write message to log"""
-        with self.log_output_widget:
-            print(self.format(message))
+        message = self.format(record) + '\n'
+        if record.levelno < logging.ERROR:
+            self.log_output_widget.append_stdout(message)
+        else:
+            self.log_output_widget.append_stderr(message)
 
 
 # Singletons
