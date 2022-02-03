@@ -8,7 +8,6 @@ from nb.model import Model
 from nb.view import View
 from nb.controller import Controller
 
-
 class Const:
     """Store app-wide constants, including values and language text."""
 
@@ -31,7 +30,12 @@ class Const:
     EMPTY = ''
     NO_DATA_MSG = '''<br>(There's no data to display.)'''
     EXPORT_LINK_PROMPT = "Click here to save file: "
-    TAB_TITLES = ['Welcome', 'Data Selection', 'Data Aggregation', 'Data Visualization', 'Settings']
+    TAB_TITLES = [
+        'Welcome',
+        'Data Selection',
+        'Data Aggregation',
+        'Data Visualization',
+        'Settings']
     PLOT_TITLE = 'Land-Ocean Temperature Index'
 
     # Welcome tab
@@ -57,6 +61,54 @@ class Const:
 
     # Data tab
     PREVIEW_SECTION_TITLE = 'Data'
+    DATA_CATEGORIES = [
+        {"label": "Crop Model", "options": [
+            "EPIC",
+            "GEPIC",
+            "IMAGE_LEITAP",
+            "LPJ-GUESS",
+            "LPJmL",
+            "pDSSAT",
+            "PEGASUS",
+        ]},
+        {"label": "GCM", "options": [
+            "GFDL-ESM2M",
+            "HadGEM2-ES",
+            "IPSL-CM5A-LR",
+            "MIROC-ESM-CHEM",
+            "NorESM1-M",
+        ]},
+        {"label": "RCP", "options": [
+            "hist",
+            "rcp2p6",
+            "rcp4p5",
+            "rcp6p0",
+            "rcp8p5",
+        ]},
+        {"label": "SSP", "options": [
+            "ssp2",
+        ]},
+        {"label": "CO2", "options": [
+            "co2",
+            "noco2",
+        ]},
+        {"label": "IRR", "options": [
+            "firr",
+            "noirr",
+        ]},
+        {"label": "Crop", "options": [
+            "maize",
+            "managed_grass",
+            "millet",
+            "others",
+            "rapeseed",
+            "rice",
+            "sorghum",
+            "soy",
+            "sugarcane",
+            "tea",
+            "wheat", ]}
+    ]
 
     # Selection tab
     CRITERIA_TITLE = 'Selection Criteria'
@@ -78,7 +130,14 @@ class Const:
     # Setting tab
     PLOT_SETTINGS_SECTION_TITLE = 'Plot Settings'
     THEME = 'Theme'
-    THEMES = ['onedork', 'grade3', 'oceans16', 'chesterish', 'monokai', 'solarizedl', 'solarizedd']
+    THEMES = [
+        'onedork',
+        'grade3',
+        'oceans16',
+        'chesterish',
+        'monokai',
+        'solarizedl',
+        'solarizedd']
     CONTEXT = 'Context'
     CONTEXTS = ['paper', 'notebook', 'talk', 'poster']
     FONT_SCALE = 'Font Scale'
@@ -103,7 +162,8 @@ class NotebookLoggingHandler(logging.Handler):
 
     def __init__(self, log_level):
         logging.Handler.__init__(self)
-        self.setFormatter(logging.Formatter('[%(levelname)s] %(message)s (%(filename_lineno)s)'))
+        self.setFormatter(logging.Formatter(
+            '[%(levelname)s] %(message)s (%(filename_lineno)s)'))
         self.setLevel(log_level)
         self.log_output_widget = widgets.Output()
 

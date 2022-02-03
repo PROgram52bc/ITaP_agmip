@@ -116,7 +116,25 @@ class View:
 
     def data_content(self):
         '''Show data tab content'''
-        content = []
+        self.radios = [widgets.RadioButtons(
+            options=category['options'],
+            style={'description_width': 'auto'},
+            layout={'overflow': 'hidden', 'height': 'auto', 'width': 'auto'},
+            description=category['label']
+        ) for category in Const.DATA_CATEGORIES ]
+
+        # Hard-coded layout
+        radio_layout = widgets.GridspecLayout(5,4)
+        radio_layout[:3, 0] = self.radios[0]
+        radio_layout[:3, 1] = self.radios[1]
+        radio_layout[:3, 2] = self.radios[2]
+        radio_layout[3:, 0] = self.radios[3]
+        radio_layout[3:, 1] = self.radios[4]
+        radio_layout[3:, 2] = self.radios[5]
+        radio_layout[:, 3] = self.radios[6]
+
+        content = [radio_layout]
+
         return self.section(Const.PREVIEW_SECTION_TITLE, content)
 
     def aggregation_content(self):

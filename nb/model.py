@@ -5,6 +5,7 @@ import os
 import csv
 import glob
 import pandas as pd
+from lib import SyncedProp
 
 
 class Model:
@@ -30,6 +31,8 @@ class Model:
         # Load data into memory from file
         self.data = pd.read_csv(os.path.join(Const.DATA_DIR, Const.DATA_FILE), escapechar='#')
         self.headers = list(self.data.columns.values)
+
+        self.radio_selections = { category['label']: SyncedProp() for category in Const.DATA_CATEGORIES }
 
         # Get values for data selection  TODO ennforce data selection limits
         self.ymin = min(self.data[self.data.columns[0]])
