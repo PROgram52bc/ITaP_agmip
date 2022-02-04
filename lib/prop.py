@@ -7,24 +7,39 @@ class SyncedProp(HasTraits):
 
     def __init__(self, *args):
         """ args is a list of 2-tuples (widget, prop) """
-        self._widget_map = {} # from id -> widget
-        self._synced_props = set() # a set of (id, prop), bidirectional updates
+        self._output_props = set() # a set of (widget, prop), only update their values
+        self._input_props = set() # a set of (widget, prop), only listen to their updates
         for (widget, prop) in args:
             self.sync_prop(widget, prop)
 
     @observe('value')
-    def _observe_value(self, change):
+    def _notify_listeners(self, change):
         """ handle programmatic change on 'value' """
         value = change['new']
         # print(f"setter called with {value}")
-        for (wid, prop) in self._synced_props:
-            setattr(self._widget_map[wid], prop, value)
+        for (widget, prop) in self._output_props:
+            setattr(widget, prop, value)
 
-    def _observe_cb(self, change):
+    def _update_self(self, change):
         """ handle updates from synced props """
         # print("change received:")
         # print(change)
         self.value = change['new']
+
+    def add_input_prop(self, widget, prop):
+        """ Listen to a widget's property without modifying it when our own value changes.
+        parameter list is the same as sync_prop
+        """
+        widget.observe(self._update_self, prop)
+        self.value = getattr(widget, prop)
+        return self
+
+    def add_output_prop(self, widget, prop):
+        """ Listen to a widget's property without modifying it when our own value changes.
+        parameter list is the same as sync_prop
+        """
+        self._output_props.add((widget, prop))
+        return self
 
     def sync_prop(self, widget, prop):
         """ Sync a widget's property with the current object.
@@ -34,11 +49,11 @@ class SyncedProp(HasTraits):
         :returns: None
 
         """
-        wid = id(widget)
-        self._widget_map[wid] = widget
-        self._synced_props.add((wid, prop))
-        widget.observe(self._observe_cb, prop)
-        self.value = getattr(widget, prop)
+        self.add_input_prop(widget, prop)
+        self.add_output_prop(widget, prop)
+        return self
+
+
 
 class ComputedProp(HasTraits):
     """ a read-only prop, whose 'value' is computed based on a function and a set of input widgets. """
@@ -58,7 +73,7 @@ class ComputedProp(HasTraits):
         self.set_output(f)
 
         self._inputs = {} # { name: (widget, prop), ... }
-        self._cache_values = {} # { hash(widget, prop): value, ... }
+        self._cache_values = {} # { (widget, prop): value, ... }
         if not inputs:
             raise ValueError("ComputedProp must be initialized with at least one input triple.")
         for i in inputs:
@@ -73,24 +88,24 @@ class ComputedProp(HasTraits):
         """ update the cache value by querying each of the inputs """
         # TODO: currently remove is not supported. Invalidate the cache when input is removed <2022-02-04, David Deng> #
         for name, (widget, prop) in self._inputs.items():
-            self._cache_values[hash((widget, prop))] = getattr(widget, prop)
+            self._cache_values[(widget, prop)] = getattr(widget, prop)
 
     def update_value(self):
         """ update the value based on the cache """
-        self.set_trait('value', self._f(**{ k:self._cache_values[hash(tup)] for k, tup in self._inputs.items() }))
+        self.set_trait('value', self._f(**{ k:self._cache_values[tup] for k, tup in self._inputs.items() }))
 
     def resync(self):
         """ resync the value attribute """
         self.update_cache()
         self.update_value()
 
-    def _observe_cb(self, change):
+    def _update_self(self, change):
         """ handle updates from synced props """
         # print("change received:")
         # print(change)
         widget = change['owner']
         prop = change['name']
-        h = hash((widget, prop))
+        h = (widget, prop)
         assert self._cache_values[h] == change['old'], \
             f"Previous cache value {self._cache_values[h]} inconsistent with change description {change['old']}"
         self._cache_values[h] = change['new']
@@ -108,9 +123,9 @@ class ComputedProp(HasTraits):
         """
         self._inputs[name] = (widget, prop)
         # avoid triggering widget getter multiple times
-        h = hash((widget, prop))
+        h = (widget, prop)
         self._cache_values[h] = getattr(widget, prop)
-        widget.observe(self._observe_cb, prop)
+        widget.observe(self._update_self, prop)
 
     def set_output(self, f):
         """ f takes an expanded **kwargs, """
