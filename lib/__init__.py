@@ -1,1 +1,1 @@
-from .prop import SyncedProp
+from .prop import SyncedProp, ComputedProp
