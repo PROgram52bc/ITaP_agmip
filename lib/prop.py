@@ -35,6 +35,6 @@ class SyncedProp(HasTraits):
     @observe('value')
     def _observe_value(self, change):
         value = change['new']
-        print(f"setter called with {value}")
+        # print(f"setter called with {value}")
         for (wid, prop) in self._synced_props:
             setattr(self._widget_map[wid], prop, value)

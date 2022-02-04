@@ -6,8 +6,8 @@ from ipyleaflet import Map, Marker, Popup
 from IPython.display import HTML, display, clear_output
 import logging
 
-
 class View:
+
     LO10 = widgets.Layout(width='10%')
     LO15 = widgets.Layout(width='15%')
     LO20 = widgets.Layout(width='20%')
@@ -41,12 +41,21 @@ class View:
         self.figsize2: widgets.FloatSlider
         self.apply: widgets.Button
 
+    def props(self, props, header="Props: "):
+        """ Get an output widget that interactively display the properties stored in a dict """
+        def f(**kwargs):
+            print(header)
+            for k,v in kwargs.items():
+                print(f"{k}: {v}")
+        return widgets.interactive_output(f, props)
+
+
     def start(self, log=False):
         """Build the user interface."""
 
         # Create module-level singletons
-        global logger, Const
-        from nb.cfg import logger, log_handler, Const
+        global logger, log_handler, Const, model
+        from nb.cfg import logger, log_handler, Const, model
 
         # Optionally show additional info in log
         if log:
@@ -90,12 +99,6 @@ class View:
         display(widgets.VBox([header, tabs]))
         logger.info('UI build completed')
 
-        # Optionally, display a widget that shows the log items
-        # Log items always appear in Jupyter Lab's log.
-        # However, this addl. log widget is useful in some contexts (e.g. HUBzero tools)
-        if log:
-            display(log_handler.log_output_widget)
-
     def section(self, title, contents):
         '''Utility method that create a collapsible widget container'''
 
@@ -108,7 +111,6 @@ class View:
 
     def welcome_content(self):
         '''Create widgets for introductory tab content'''
-        from nb.cfg import log_handler
         content = []
         content.append(self.section(Const.USING_TITLE, Const.USING_TEXT))
         content.append(self.section("Log", [log_handler.log_output_widget]))
@@ -133,7 +135,10 @@ class View:
         radio_layout[3:, 2] = self.radios[5]
         radio_layout[:, 3] = self.radios[6]
 
-        content = [radio_layout]
+        # interactive display
+        radio_selection_display = self.props(model.radio_selections, "Selections")
+
+        content = [radio_layout, radio_selection_display]
 
         return self.section(Const.PREVIEW_SECTION_TITLE, content)
 

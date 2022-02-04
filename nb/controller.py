@@ -8,13 +8,6 @@ from matplotlib import pyplot as plt
 import ipywidgets as widgets
 import subprocess
 
-def show_props(props, header="Key-value pairs:"):
-    def f(**kwargs):
-        print(header)
-        for k,v in kwargs.items():
-            print(f"{k}: {v}")
-    display(widgets.interactive_output(f, props))
-
 class Controller():
 
     def start(self):
@@ -42,9 +35,6 @@ class Controller():
             for radio in view.radios:
                 p = model.radio_selections[radio.description]
                 p.sync_prop(radio, 'value')
-            show_props(model.radio_selections, "Radio Selections:")
-            show_props({'crop model': view.radios[0]}, "Crop model")
-            show_props({'crop model': model.radio_selections['Crop Model']}, "Crop model")
             logger.info('App running')
         except Exception:
             logger.debug('Exception while setting up callbacks...\n'+traceback.format_exc())
