@@ -35,6 +35,10 @@ class Controller():
             for radio in view.radios:
                 p = model.radio_selections[radio.description]
                 p.sync_prop(radio, 'value')
+
+            model.data_file_path.add_inputs(*model.radio_selections.values())
+            model.data_file_path.set_output(model.get_data_file_path)
+
             logger.info('App running')
         except Exception:
             logger.debug('Exception while setting up callbacks...\n'+traceback.format_exc())

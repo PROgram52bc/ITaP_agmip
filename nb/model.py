@@ -5,7 +5,7 @@ import os
 import csv
 import glob
 import pandas as pd
-from lib import SyncedProp
+from lib import SyncedProp, ComputedProp
 
 
 class Model:
@@ -33,12 +33,18 @@ class Model:
         self.headers = list(self.data.columns.values)
 
         self.radio_selections = { category['label']: SyncedProp() for category in Const.DATA_CATEGORIES }
+        self.data_file_path = ComputedProp()
 
         # Get values for data selection  TODO ennforce data selection limits
         self.ymin = min(self.data[self.data.columns[0]])
         self.ymax = max(self.data[self.data.columns[0]])
 
+
         logger.info('Data load completed')
+
+    def get_data_file_path(self):
+        """ Get the data file path based on radio_selections """
+        return os.path.join(*[p.value for p in self.radio_selections.values()])
 
     def set_disp(self, data=None, limit=None, wide=False):
         """Prep Pandas to display specific number of data lines."""

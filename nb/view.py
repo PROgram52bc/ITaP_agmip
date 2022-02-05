@@ -138,7 +138,7 @@ class View:
         # interactive display
         radio_selection_display = self.props(model.radio_selections, "Selections")
 
-        content = [radio_layout, radio_selection_display]
+        content = [radio_layout, radio_selection_display, self.props({'path': model.data_file_path}, "Path")]
 
         return self.section(Const.PREVIEW_SECTION_TITLE, content)
 
@@ -157,29 +157,6 @@ class View:
         self.hello_btn = widgets.Button(description="Aggregate")
 
         content = []
-
-        # # Section: Selection criteria
-        # section_list = []
-        # section_list.append(self.filter_txt_startyr)
-        # section_list.append(self.filter_txt_endyr)
-        # section_list.append(self.filter_btn_apply)
-        # content.append(self.section(Const.CRITERIA_TITLE, section_list))
-
-        # # Section: Output (with apply button)
-        # section_list = []
-        # row = []
-        # row.append(widgets.HTML('<div style="text-align: right;">'+Const.OUTPUT_PRE+'</div>', layout=self.LO15))
-        # row.append(self.filter_ddn_ndisp)
-        # row.append(widgets.HTML('<div style="text-align: left;">' + Const.OUTPUT_POST + '</div>', layout=self.LO10))
-        # section_list.append(widgets.HBox(row))
-        # section_list.append(widgets.HBox([self.filter_output]))  # NOTE Use "layout={'width': '90vw'}" to widen
-        # content.append(self.section(Const.OUTPUT_TITLE, section_list))
-
-        # # Section: Export (download)
-        # section_list = []
-        # section_list.append(widgets.VBox([self.filter_btn_refexp, self.filter_out_export]))
-        # content.append(self.section(Const.EXPORT_TITLE, section_list))
-
         content.append(self.section("Data Aggregation", [self.hello_btn]))
 
         return widgets.VBox(content)
