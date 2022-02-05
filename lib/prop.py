@@ -1,16 +1,34 @@
 from traitlets import HasTraits, Any, observe
 
+def is_list_unpackable(obj):
+    try:
+        (lambda *a: None)(*obj)
+    except TypeError:
+        return False
+    return True
+
+def is_dict_unpackable(obj):
+    try:
+        (lambda **a: None)(**obj)
+    except TypeError:
+        return False
+    return True
+
 class SyncedProp(HasTraits):
     """ Single synced prop to multiple widgets """
 
     value = Any()
 
     def __init__(self, *args):
-        """ args is a list of 2-tuples (widget, prop) """
+        """ args is a list of 2-tuples (widget, prop) or widget """
         self._output_props = set() # a set of (widget, prop), only update their values
         self._input_props = set() # a set of (widget, prop), only listen to their updates
-        for (widget, prop) in args:
-            self.sync_prop(widget, prop)
+
+        for i in args:
+            if is_list_unpackable(i):
+                self.sync_prop(*i)
+            else:
+                self.sync_prop(i)
 
     @observe('value')
     def _notify_listeners(self, change):
@@ -55,8 +73,9 @@ class SyncedProp(HasTraits):
 
 class ComputedProp(HasTraits):
     """ a read-only prop, whose 'value' is computed based on a function and a set of input widgets.
-    c = ComputedProp((widget, prop), ..., f=output_function)
-    c2 = ComputedProp((widget, prop, name), ..., f=output_function)
+    c1 = ComputedProp(widget, ..., f=output_function) # prop default to 'value'
+    c2 = ComputedProp((widget, prop), ..., f=output_function)
+    c3 = ComputedProp((widget, prop, name), ..., f=output_function)
     f should not have side effects.
     """
 
@@ -76,14 +95,11 @@ class ComputedProp(HasTraits):
 
         self._inputs = {} # { name: (widget, prop), ... }
         self._cache_values = {} # { (widget, prop): value, ... }
-        if not inputs:
-            raise ValueError("ComputedProp must be initialized with at least one input tuple or triple.")
-        for i in inputs:
-            # try:
-            #     name, widget, prop = i
-            # except:
-            #     raise ValueError(f"input {i} cannot be unpacked to a triple.")
-            self.add_input(*i)
+
+        # if not inputs:
+        #     raise ValueError("ComputedProp must be initialized with at least one input tuple or triple.")
+
+        self.add_inputs(*inputs)
         self.update_value()
 
     def update_cache(self):
@@ -132,6 +148,14 @@ class ComputedProp(HasTraits):
             self._cache_values[h] = getattr(widget, prop)
         # print(f"registering listener on {widget}, {prop}")
         widget.observe(self._update_self, prop)
+
+    def add_inputs(self, *inputs):
+        for i in inputs:
+            if not is_list_unpackable(i):
+                # if i is not a tuple, it is a widget, prop default to 'value'
+                widget = i
+                i = (widget, 'value')
+            self.add_input(*i)
 
     def set_output(self, f):
         """ f takes an expanded **kwargs, """
