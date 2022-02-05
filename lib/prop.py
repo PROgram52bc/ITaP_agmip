@@ -1,7 +1,7 @@
 from traitlets import HasTraits, Any, observe
 
 class SyncedProp(HasTraits):
-    """single synced prop to multiple widgets"""
+    """ Single synced prop to multiple widgets """
 
     value = Any()
 
@@ -26,7 +26,7 @@ class SyncedProp(HasTraits):
         # print(change)
         self.value = change['new']
 
-    def add_input_prop(self, widget, prop):
+    def add_input_prop(self, widget, prop='value'):
         """ Listen to a widget's property without modifying it when our own value changes.
         parameter list is the same as sync_prop
         """
@@ -34,14 +34,14 @@ class SyncedProp(HasTraits):
         self.value = getattr(widget, prop)
         return self
 
-    def add_output_prop(self, widget, prop):
+    def add_output_prop(self, widget, prop='value'):
         """ Listen to a widget's property without modifying it when our own value changes.
         parameter list is the same as sync_prop
         """
         self._output_props.add((widget, prop))
         return self
 
-    def sync_prop(self, widget, prop):
+    def sync_prop(self, widget, prop='value'):
         """ Sync a widget's property with the current object.
 
         :widget: the widget whose property is to be synced
@@ -53,10 +53,12 @@ class SyncedProp(HasTraits):
         self.add_output_prop(widget, prop)
         return self
 
-
-
 class ComputedProp(HasTraits):
-    """ a read-only prop, whose 'value' is computed based on a function and a set of input widgets. """
+    """ a read-only prop, whose 'value' is computed based on a function and a set of input widgets.
+    c = ComputedProp((widget, prop), ..., f=output_function)
+    c2 = ComputedProp((widget, prop, name), ..., f=output_function)
+    f should not have side effects.
+    """
 
     value = Any(read_only=True)
 
@@ -75,13 +77,13 @@ class ComputedProp(HasTraits):
         self._inputs = {} # { name: (widget, prop), ... }
         self._cache_values = {} # { (widget, prop): value, ... }
         if not inputs:
-            raise ValueError("ComputedProp must be initialized with at least one input triple.")
+            raise ValueError("ComputedProp must be initialized with at least one input tuple or triple.")
         for i in inputs:
-            try:
-                name, widget, prop = i
-            except:
-                raise ValueError(f"input {i} cannot be unpacked to a triple.")
-            self.add_input(name, widget, prop)
+            # try:
+            #     name, widget, prop = i
+            # except:
+            #     raise ValueError(f"input {i} cannot be unpacked to a triple.")
+            self.add_input(*i)
         self.update_value()
 
     def update_cache(self):
@@ -106,25 +108,29 @@ class ComputedProp(HasTraits):
         widget = change['owner']
         prop = change['name']
         h = (widget, prop)
-        assert self._cache_values[h] == change['old'], \
-            f"Previous cache value {self._cache_values[h]} inconsistent with change description {change['old']}"
-        self._cache_values[h] = change['new']
+        # only update cache if the property is named
+        if h in self._cache_values:
+            assert self._cache_values[h] == change['old'], \
+                f"Previous cache value {self._cache_values[h]} inconsistent with change description {change['old']}"
+            self._cache_values[h] = change['new']
         self.update_value()
 
-
-    def add_input(self, name, widget, prop):
+    def add_input(self, widget, prop, name=None):
         """ add a widget's property with the current object.
 
-        :name: the name of the input to be referred to in set_output's function
         :widget: the widget whose property is to be taken as an input
         :prop: the property name on the widget
+        :name: the name of the input to be referred to in set_output's function,
+                if None, it will not be passed to the output function
         :returns: None
 
         """
-        self._inputs[name] = (widget, prop)
-        # avoid triggering widget getter multiple times
-        h = (widget, prop)
-        self._cache_values[h] = getattr(widget, prop)
+        if name is not None:
+            self._inputs[name] = (widget, prop)
+            # avoid triggering widget getter multiple times
+            h = (widget, prop)
+            self._cache_values[h] = getattr(widget, prop)
+        # print(f"registering listener on {widget}, {prop}")
         widget.observe(self._update_self, prop)
 
     def set_output(self, f):
