@@ -14,15 +14,25 @@ def is_dict_unpackable(obj):
         return False
     return True
 
+class Prop(HasTraits):
+    """ Simple Prop with a 'value' attribute. """
+    value = Any()
+    def __init__(self, value=None):
+        self.value = value
+
 class SyncedProp(HasTraits):
-    """ Single synced prop to multiple widgets """
+    """ Single synced prop to multiple widgets
+    s1 = SyncedProp(widget, ..., value=None) # prop default to 'value'
+    s2 = SyncedProp((widget, prop), ..., value=None)
+    """
 
     value = Any()
 
-    def __init__(self, *args):
+    def __init__(self, *args, value=None):
         """ args is a list of 2-tuples (widget, prop) or widget """
         self._output_props = set() # a set of (widget, prop), only update their values
         self._input_props = set() # a set of (widget, prop), only listen to their updates
+        self.value = value
 
         for i in args:
             if is_list_unpackable(i):
@@ -44,31 +54,57 @@ class SyncedProp(HasTraits):
         # print(change)
         self.value = change['new']
 
-    def add_input_prop(self, widget, prop='value'):
+    # TODO: add transformer to input and output prop <2022-02-10, David Deng> #
+    def add_input_prop(self, widget, prop='value', sync=True):
         """ Listen to a widget's property without modifying it when our own value changes.
         parameter list is the same as sync_prop
+
+        :sync: whether to update the current object's value according to the input prop.
+            It will also update the values of all registered output props.
+            Default to True.
         """
         widget.observe(self._update_self, prop)
-        self.value = getattr(widget, prop)
+        if sync:
+            self.value = getattr(widget, prop)
         return self
 
-    def add_output_prop(self, widget, prop='value'):
+    def add_output_prop(self, widget, prop='value', sync=False):
         """ Listen to a widget's property without modifying it when our own value changes.
         parameter list is the same as sync_prop
+
+        :sync: whether to sync the current object's value to the output prop.
+            Default to False.
         """
         self._output_props.add((widget, prop))
+        if sync:
+            setattr(widget, prop, self.value)
         return self
 
-    def sync_prop(self, widget, prop='value'):
+    def sync_prop(self, widget, prop='value', source='prop'):
         """ Sync a widget's property with the current object.
 
         :widget: the widget whose property is to be synced
         :prop: the property name on the widget
+        :source: the source of initialization, can be 'self', 'prop', or 'none'
+            'self' means update the registered prop value according to this object's value
+            'prop' means update this object's value according to the registerd prop value
+            'none' means don't update the value, but only register listeners on both objects.
         :returns: None
 
         """
-        self.add_input_prop(widget, prop)
-        self.add_output_prop(widget, prop)
+        sync_input = False
+        sync_output = False
+        if source == 'prop':
+            sync_input = True
+        elif source == 'self':
+            sync_output = True
+        elif source == 'None':
+            pass
+        else:
+            raise ValueError("The source parameter must be one of 'self', 'prop', or 'none'.")
+
+        self.add_input_prop(widget, prop, sync=sync_input)
+        self.add_output_prop(widget, prop, sync=sync_output)
         return self
 
 class ComputedProp(HasTraits):
