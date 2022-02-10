@@ -2,9 +2,13 @@
 # rcampbel@purdue.edu - 2020-07-14
 
 import ipywidgets as widgets
-from ipyleaflet import Map, Marker, Popup
+from ipyleaflet import Map, Marker, Popup, WidgetControl, Choropleth
 from IPython.display import HTML, display, clear_output
 import logging
+from branca.colormap import linear
+import json
+import csv
+
 
 class View:
 
@@ -13,8 +17,9 @@ class View:
     LO20 = widgets.Layout(width='20%')
 
     def __init__(self):
-        # The view's "public" attributes are listed here, with type hints, for quick reference
-        self.hello_btn: widgets.Button
+        # The view's "public" attributes are listed here, with type hints, for
+        # quick reference
+        self.aggregate_btn: widgets.Button
 
         # Filer ("Selection" tab) controls
         self.filter_txt_startyr: widgets.Text
@@ -45,10 +50,9 @@ class View:
         """ Get an output widget that interactively display the properties stored in a dict """
         def f(**kwargs):
             print(header)
-            for k,v in kwargs.items():
+            for k, v in kwargs.items():
                 print(f"{k}: {v}")
         return widgets.interactive_output(f, props)
-
 
     def start(self, log=False):
         """Build the user interface."""
@@ -58,9 +62,9 @@ class View:
         from nb.cfg import logger, log_handler, Const, model
 
         # Optionally show additional info in log
-        if log:
-            log_handler.setLevel(logging.INFO)
-            logger.setLevel(logging.INFO)
+        # if log:
+        #     log_handler.setLevel(logging.INFO)
+        #     logger.setLevel(logging.INFO)
 
         # Create user interface
 
@@ -69,11 +73,14 @@ class View:
 
         # Create large title for app
         app_title = widgets.HTML(Const.APP_TITLE)
-        app_title.add_class('app_title')  # Example of custom widget style via CSS, see custom.html
+        # Example of custom widget style via CSS, see custom.html
+        app_title.add_class('app_title')
 
         # Create app logo - example of using exposed layout properties
         with open(Const.LOGO_IMAGE, "rb") as logo_file:
-            logo = widgets.Image(value=logo_file.read(), format='png', layout={'max_height': '32px'})
+            logo = widgets.Image(
+                value=logo_file.read(), format='png', layout={
+                    'max_height': '32px'})
 
         # Create tabs and fill with UI content (widgets)
 
@@ -89,7 +96,7 @@ class View:
         tab_content.append(self.data_content())
         tab_content.append(self.aggregation_content())
         tab_content.append(self.visualize_content())
-        tab_content.append(self.settings_content())
+        # tab_content.append(self.settings_content())
 
         tabs.children = tuple(tab_content)  # Fill tabs with content
 
@@ -102,7 +109,7 @@ class View:
     def section(self, title, contents):
         '''Utility method that create a collapsible widget container'''
 
-        if type(contents) == str:
+        if isinstance(contents, str):
             contents = [widgets.HTML(value=contents)]
 
         ret = widgets.Accordion(children=tuple([widgets.VBox(contents)]))
@@ -123,10 +130,10 @@ class View:
             style={'description_width': 'auto'},
             layout={'overflow': 'hidden', 'height': 'auto', 'width': 'auto'},
             description=category['label']
-        ) for category in Const.DATA_CATEGORIES ]
+        ) for category in Const.DATA_CATEGORIES]
 
         # Hard-coded layout
-        radio_layout = widgets.GridspecLayout(5,4)
+        radio_layout = widgets.GridspecLayout(5, 4)
         radio_layout[:3, 0] = self.radios[0]
         radio_layout[:3, 1] = self.radios[1]
         radio_layout[:3, 2] = self.radios[2]
@@ -135,61 +142,177 @@ class View:
         radio_layout[3:, 2] = self.radios[5]
         radio_layout[:, 3] = self.radios[6]
 
-        # interactive display
-        radio_selection_display = self.props(model.radio_selections, "Selections")
+        # dropdown
+        self.dropdown = widgets.Dropdown(options=[],
+                                         description='Select file',
+                                         )
 
-        content = [radio_layout, radio_selection_display, self.props({'path': model.data_file_path}, "Path")]
+        content = [radio_layout,
+                   self.props({'path': model.data_file_path}, "Props"),
+                   self.dropdown]
 
         return self.section(Const.PREVIEW_SECTION_TITLE, content)
 
     def aggregation_content(self):
         '''Create widgets for selection tab content'''
-        self.filter_txt_startyr = widgets.Text(description=Const.START_YEAR, value='', placeholder='')
-        self.filter_txt_endyr = widgets.Text(description=Const.END_YEAR, value='', placeholder='')
-        self.filter_btn_apply = widgets.Button(description=Const.CRITERIA_APPLY, icon='filter',
-                                               layout=self.LO20)
-        self.filter_ddn_ndisp = widgets.Dropdown(options=['25', '50', '100', Const.ALL], layout=self.LO10)
+        self.filter_txt_startyr = widgets.Text(
+            description=Const.START_YEAR, value='', placeholder='')
+        self.filter_txt_endyr = widgets.Text(
+            description=Const.END_YEAR, value='', placeholder='')
+        self.filter_btn_apply = widgets.Button(
+            description=Const.CRITERIA_APPLY, icon='filter', layout=self.LO20)
+        self.filter_ddn_ndisp = widgets.Dropdown(
+            options=['25', '50', '100', Const.ALL], layout=self.LO10)
         self.filter_output = widgets.Output()
-        self.filter_btn_refexp = widgets.Button(description=Const.EXPORT_BUTTON, icon='download',
-                                                layout=self.LO20)
-        self.filter_out_export = widgets.Output(layout={'border': '1px solid black'})
+        self.filter_btn_refexp = widgets.Button(
+            description=Const.EXPORT_BUTTON, icon='download', layout=self.LO20)
+        self.filter_out_export = widgets.Output(
+            layout={'border': '1px solid black'})
 
-        self.hello_btn = widgets.Button(description="Aggregate")
+        self.aggregate_btn = widgets.Button(description="Aggregate")
+        self.download_btn = widgets.Button(description="Download")
+
+        # interactive display
+        radio_selection_display = self.props(
+            model.radio_selections, "Selections")
+
+        self.range_slider = widgets.IntRangeSlider(
+            value=[1990, 2010],
+            min=1980,
+            max=2020,
+            step=1,
+            description='Year Range',
+            disabled=False,
+            continuous_update=False,
+            orientation='horizontal',
+            readout=True,
+            readout_format='d',
+        )
 
         content = []
-        content.append(self.section("Data Aggregation", [self.hello_btn]))
+        content.append(
+            self.section(
+                "Data Aggregation", [
+                    self.range_slider, self.aggregate_btn, self.download_btn, radio_selection_display]))
 
         return widgets.VBox(content)
 
     def visualize_content(self):
         '''Create widgets for visualize tab content'''
         content = []
-        content.append(self.section(Const.NOTE_TITLE, Const.NOTE_TEXT))
-        self.plot_ddn = widgets.Dropdown(options=[Const.EMPTY], value=None, disabled=True)
-        self.plot_output = widgets.Output()
-        section_list = []
 
-        row = []
-        row.append(widgets.HTML(value=Const.PLOT_LABEL))
-        row.append(widgets.Label(value='', layout=widgets.Layout(width='60%')))  # Cheat: spacer
-        section_list.append(widgets.HBox(row))
-        section_list.append(self.plot_ddn)
-        section_list.append(self.plot_output)
-        content.append(self.section(Const.PLOT_TITLE, section_list))
+        coordinates = [0, 0]
+        center = (0, 0)
 
-        return widgets.VBox(content)
+# read prod data
+        with open('data/countries.geo.json', 'r') as f:
+            geodata = json.load(f)
+
+        country_keys = [d['id'] for d in geodata['features']]
+        countries = dict.fromkeys(country_keys, 0.0)
+
+# prod_data = {1980: { 'AFG': 0, 'AGO': 135, ...}}
+        prod_data = {}
+        with open('data/out.csv', 'r') as f:
+            for row in csv.DictReader(f):
+                year = int(row['time'])
+                country = row['id']
+                production = float(row['production'])
+                prod_data.setdefault(year, countries.copy())
+                if country in prod_data[year]:
+                    prod_data[year][country] = production
+                else:
+                    logger.warning(f"{country} not in dict")
+
+
+# create map
+        content = []
+
+        m = Map(center=center, zoom=2, close_popup_on_click=True)
+
+        def cb_map(**kwargs):
+            if (kwargs['type'] == 'preclick'):
+                global coordinates
+                coordinates = kwargs['coordinates']
+                # popup.close_popup()
+                # print(coordinates)
+
+        m.on_interaction(cb_map)
+
+        choro_data = prod_data[1980]
+        choro = Choropleth(
+            data=geodata.copy(),
+            hover_style={
+                'color': 'white', 'dashArray': '0', 'fillOpacity': 0.5
+            },
+            geo_data=geodata.copy(),
+            choro_data=choro_data,
+            colormap=linear.YlOrRd_04,
+            border_color='black',
+            style={'fillOpacity': 0.8, 'dashArray': '5, 5'})
+
+
+# todo: use widget control, parameterize year range
+# create slider
+        zoom_slider = widgets.IntSlider(
+            description='Year', min=1990, max=2020, value=1990)
+
+        content.append(zoom_slider)
+        content.append(m)
+
+# todo: use a computed prop to sync
+        def on_value_change(change):
+            # print(change)
+            new_year = change['new']
+            if new_year not in prod_data:
+                logger.debug(f"Map: no data for year {new_year}")
+            else:
+                choro.choro_data = prod_data[new_year]
+        zoom_slider.observe(on_value_change, names='value')
+
+        def cb_geojson(**kwargs):
+            # kwargs = {'event': 'click', 'feature': {'type': 'Feature',
+            # 'properties': {'ADMIN': 'Ivory Coast', 'ISO_A3': 'CIV', 'style':
+            # {'color': 'black', 'fillColor': 'red'}}, 'geometry': ..., ...}
+            # print(coordinates)
+            popup.open_popup(coordinates)
+            feature_id = kwargs['feature']['id']
+            popup.child = widgets.HTML(feature_id)
+
+        choro.on_click(cb_geojson)
+
+        m.add_layer(choro)
+
+# create popup
+        popup = Popup(
+            location=center,
+            close_button=True,
+            auto_close=True,
+            close_on_escape_key=True
+        )
+        m.add_layer(popup)
+# todo: how to close popup on start?
+# popup.close_popup()
+        return self.section("Map", content)
 
     def settings_content(self):
         """Create widgets for settings tab."""
-        self.theme = widgets.Dropdown(description=Const.THEME, options=Const.THEMES)
-        self.context = widgets.Dropdown(description=Const.CONTEXT, options=Const.CONTEXTS)
-        self.fscale = widgets.FloatSlider(description=Const.FONT_SCALE, value=1.4)
+        self.theme = widgets.Dropdown(
+            description=Const.THEME,
+            options=Const.THEMES)
+        self.context = widgets.Dropdown(
+            description=Const.CONTEXT,
+            options=Const.CONTEXTS)
+        self.fscale = widgets.FloatSlider(
+            description=Const.FONT_SCALE, value=1.4)
         self.spines = widgets.Checkbox(description=Const.SPINES, value=False)
         self.gridlines = widgets.Text(description=Const.GRIDLINES, value='--')
         self.ticks = widgets.Checkbox(description=Const.TICKS, value=True)
         self.grid = widgets.Checkbox(description=Const.GRID, value=False)
-        self.figsize1 = widgets.FloatSlider(description=Const.FIG_WIDTH, value=6)
-        self.figsize2 = widgets.FloatSlider(description=Const.FIG_HEIGHT, value=4.5)
+        self.figsize1 = widgets.FloatSlider(
+            description=Const.FIG_WIDTH, value=6)
+        self.figsize2 = widgets.FloatSlider(
+            description=Const.FIG_HEIGHT, value=4.5)
         self.apply = widgets.Button(description=Const.APPLY)
 
         return(self.section(Const.PLOT_SETTINGS_SECTION_TITLE,
@@ -198,7 +321,8 @@ class View:
 
     def set_no_data(self):
         """Indicate there are no results."""
-        # NOTE While the other view methods build the UI, this one acts an example of a helper method
+        # NOTE While the other view methods build the UI, this one acts an
+        # example of a helper method
 
         with self.filter_output:
             clear_output(wait=True)

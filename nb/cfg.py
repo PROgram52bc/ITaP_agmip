@@ -178,10 +178,10 @@ class NotebookLoggingHandler(logging.Handler):
 
 # Singletons
 logger = logging.getLogger(__name__)
-log_handler = NotebookLoggingHandler(logging.INFO)
+log_handler = NotebookLoggingHandler(logging.DEBUG)
 logger.addHandler(log_handler)
 logger.addFilter(AppendFileLineToLog())
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 model = Model()
 view = View()
 ctrl = Controller()

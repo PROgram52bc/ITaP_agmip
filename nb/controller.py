@@ -7,6 +7,7 @@ from jupyterthemes import jtplot
 from matplotlib import pyplot as plt
 import ipywidgets as widgets
 import subprocess
+from lib import SyncedProp
 
 class Controller():
 
@@ -26,19 +27,21 @@ class Controller():
             # Connect UI widgets to callback methods ("cb_...").
             # These methods will be run when user changes a widget.
             # NOTE "on_click()" connects buttons, "observe()" connects other widgets.
-            view.filter_btn_apply.on_click(self.cb_apply_filter)
-            view.filter_ddn_ndisp.observe(self.cb_ndisp_changed, 'value')
-            view.filter_btn_refexp.on_click(self.cb_fill_results_export)
-            view.plot_ddn.observe(self.cb_plot_type_selected, 'value')
-            view.apply.on_click(self.cb_apply_plot_settings)
-            view.hello_btn.on_click(self.cb_hello)
+            # view.filter_btn_apply.on_click(self.cb_apply_filter)
+            # view.filter_ddn_ndisp.observe(self.cb_ndisp_changed, 'value')
+            # view.filter_btn_refexp.on_click(self.cb_fill_results_export)
+            # view.plot_ddn.observe(self.cb_plot_type_selected, 'value')
+            # view.apply.on_click(self.cb_apply_plot_settings)
+            view.aggregate_btn.on_click(self.cb_hello)
             for radio in view.radios:
                 p = model.radio_selections[radio.description]
                 p.sync_prop(radio, 'value')
 
-            model.data_file_path.add_inputs(*model.radio_selections.values())
-            model.data_file_path.set_output(model.get_data_file_path)
-
+            model.data_file_path.resync()
+            # Connect to dropdown selection
+            SyncedProp() \
+                .add_input_prop(model.dropdown_selections, sync=True) \
+                .add_output_prop(view.dropdown, 'options', sync=True)
             logger.info('App running')
         except Exception:
             logger.debug('Exception while setting up callbacks...\n'+traceback.format_exc())
@@ -102,6 +105,7 @@ class Controller():
 
     def cb_plot_type_selected(self, _):
         """React to use requesting plot."""
+        pass
         try:
 
             if not view.plot_ddn.value == Const.EMPTY:
