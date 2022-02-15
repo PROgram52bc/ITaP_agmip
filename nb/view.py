@@ -9,6 +9,7 @@ from branca.colormap import linear
 import json
 import csv
 
+coordinates = [0, 0]
 
 class View:
 
@@ -85,6 +86,7 @@ class View:
         # Create tabs and fill with UI content (widgets)
 
         tabs = widgets.Tab()
+        self.tabs = tabs
 
         # Add title text for each tab
         for i, tab_title in enumerate(Const.TAB_TITLES):
@@ -201,7 +203,6 @@ class View:
         '''Create widgets for visualize tab content'''
         content = []
 
-        coordinates = [0, 0]
         center = (0, 0)
 
 # read prod data
@@ -210,6 +211,22 @@ class View:
 
         country_keys = [d['id'] for d in geodata['features']]
         countries = dict.fromkeys(country_keys, 0.0)
+
+
+# create map
+        content = []
+
+        m = Map(center=center, zoom=2, close_popup_on_click=True)
+        self.map = m
+
+        def cb_map(**kwargs):
+            if (kwargs['type'] == 'preclick'):
+                global coordinates
+                coordinates = kwargs['coordinates']
+                # popup.close_popup()
+                # print(coordinates)
+
+        m.on_interaction(cb_map)
 
 # prod_data = {1980: { 'AFG': 0, 'AGO': 135, ...}}
         prod_data = {}
@@ -223,21 +240,6 @@ class View:
                     prod_data[year][country] = production
                 else:
                     logger.warning(f"{country} not in dict")
-
-
-# create map
-        content = []
-
-        m = Map(center=center, zoom=2, close_popup_on_click=True)
-
-        def cb_map(**kwargs):
-            if (kwargs['type'] == 'preclick'):
-                global coordinates
-                coordinates = kwargs['coordinates']
-                # popup.close_popup()
-                # print(coordinates)
-
-        m.on_interaction(cb_map)
 
         choro_data = prod_data[1980]
         choro = Choropleth(
@@ -256,8 +258,9 @@ class View:
 # create slider
         zoom_slider = widgets.IntSlider(
             description='Year', min=1990, max=2020, value=1990)
+        render_button = widgets.Button(description="Render")
 
-        content.append(zoom_slider)
+        content.append(widgets.HBox([zoom_slider, render_button]))
         content.append(m)
 
 # todo: use a computed prop to sync
