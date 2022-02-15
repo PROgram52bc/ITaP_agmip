@@ -3,13 +3,53 @@
 
 import ipywidgets as widgets
 from ipyleaflet import Map, Marker, Popup, WidgetControl, Choropleth
-from IPython.display import HTML, display, clear_output
+from IPython.display import HTML, display, clear_output, FileLink
 import logging
 from branca.colormap import linear
+from typing import Callable
 import json
 import csv
+import base64
+import hashlib
 
 coordinates = [0, 0]
+
+# https://stackoverflow.com/questions/61708701/how-to-download-a-file-using-ipywidget-button
+class DownloadButton(widgets.Button):
+    """Download button with dynamic content
+
+    The content is generated using a callback when the button is clicked.
+    """
+
+    def __init__(self, filename: str, contents: Callable[[], str], **kwargs):
+        super(DownloadButton, self).__init__(**kwargs)
+        self.filename = filename
+        self.contents = contents
+        self.on_click(self.__on_click)
+
+    def __on_click(self, b):
+        contents: bytes = self.contents().encode('utf-8')
+        b64 = base64.b64encode(contents)
+        payload = b64.decode()
+        digest = hashlib.md5(contents).hexdigest()  # bypass browser cache
+        id = f'dl_{digest}'
+
+        display(HTML(f"""
+<html>
+<body>
+<a id="{id}" download="{self.filename}" href="data:text/csv;base64,{payload}" download>
+</a>
+
+<script>
+(function download() {{
+document.getElementById('{id}').click();
+}})()
+</script>
+
+</body>
+</html>
+"""))
+
 
 class View:
 
@@ -172,7 +212,7 @@ class View:
             layout={'border': '1px solid black'})
 
         self.aggregate_btn = widgets.Button(description="Aggregate")
-        self.download_btn = widgets.Button(description="Download")
+        self.download_btn = DownloadButton(filename='out.csv', contents=lambda: 'hello', description='Download')
 
         # interactive display
         radio_selection_display = self.props(
