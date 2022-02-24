@@ -12,7 +12,7 @@ import csv
 import base64
 import hashlib
 import os
-from nb.utils import get_dir_content
+from nb.utils import get_dir_content, displayable
 
 coordinates = [0, 0]
 
@@ -63,15 +63,6 @@ class View:
         # The view's "public" attributes are listed here, with type hints, for
         # quick reference
         self.aggregate_btn: widgets.Button
-
-        # Filer ("Selection" tab) controls
-        self.filter_txt_startyr: widgets.Text
-        self.filter_txt_endyr: widgets.Text
-        self.filter_btn_apply: widgets.Button
-        self.filter_ddn_ndisp: widgets.Dropdown
-        self.filter_output: widgets.Output
-        self.filter_btn_refexp: widgets.Button
-        self.filter_out_export: widgets.Output
 
         # Plot ("Visualize" tab) controls
         self.plot_ddn: widgets.Dropdown
@@ -192,37 +183,23 @@ class View:
                                          )
 
         content = [radio_layout,
-                   self.props({'path': model.data_file_path}, "Props"),
+                   displayable(model.data_file_path, "data file path"),
+                   displayable(model.selected_file, "selected file"),
                    self.dropdown]
 
         return self.section(Const.PREVIEW_SECTION_TITLE, content)
 
     def aggregation_content(self):
         '''Create widgets for selection tab content'''
-        self.filter_txt_startyr = widgets.Text(
-            description=Const.START_YEAR, value='', placeholder='')
-        self.filter_txt_endyr = widgets.Text(
-            description=Const.END_YEAR, value='', placeholder='')
-        self.filter_btn_apply = widgets.Button(
-            description=Const.CRITERIA_APPLY, icon='filter', layout=self.LO20)
-        self.filter_ddn_ndisp = widgets.Dropdown(
-            options=['25', '50', '100', Const.ALL], layout=self.LO10)
-        self.filter_output = widgets.Output()
-        self.filter_btn_refexp = widgets.Button(
-            description=Const.EXPORT_BUTTON, icon='download', layout=self.LO20)
-        self.filter_out_export = widgets.Output(
-            layout={'border': '1px solid black'})
 
         self.aggregate_btn = widgets.Button(description="Aggregate")
-        self.download_btn = DownloadButton(filename='out.csv', contents=lambda: 'hello', description='Download')
+        self.download_btn = DownloadButton(filename='aggregated.csv', contents=lambda: 'hello', description='Download')
 
+        # static dropdown
         weightmaps = get_dir_content(Const.WEIGHT_MAP_DIR)
         self.weight_map_dropdown = widgets.Dropdown(description="Weightmap",
             options=weightmaps)
 
-        # interactive display
-        radio_selection_display = self.props(
-            model.radio_selections, "Selections")
 
         self.range_slider = widgets.IntRangeSlider(
             value=[1990, 2010],
@@ -241,8 +218,9 @@ class View:
         content.append(
             self.section(
                 "Data Aggregation", [
+                    displayable(model.selected_file, "selected file"),
                     self.range_slider, self.weight_map_dropdown,
-                    self.aggregate_btn, self.download_btn, radio_selection_display]))
+                    self.aggregate_btn, self.download_btn]))
 
         return widgets.VBox(content)
 

@@ -9,6 +9,8 @@ import ipywidgets as widgets
 import subprocess
 from lib import SyncedProp
 import os
+from nb.utils import get_yield_variable
+import netCDF4
 
 class Controller():
 
@@ -48,13 +50,15 @@ class Controller():
             logger.debug('Exception while setting up callbacks...\n'+traceback.format_exc())
             raise
 
-    def get_yield_variable(self, f):
-        return [ key for key in f.variables.keys() if key.startswith("yield_") ]
-
     def cb_aggregate(self, _):
+        input_file = model.selected_file.value
         input_file = "data/epic_hadgem2-es_hist_ssp2_co2_firr_yield_soy_annual_1980_2010.nc4"
-        start_year = "1980"
-        end_year = "2010"
+        start_year, end_year = view.range_slider.value
+        with netCDF4.Dataset(input_file) as f:
+            yield_var = get_yield_variable(f)
+        if yield_var is None:
+            logger.error(f"Cannot get yield variable from file {input_file}")
+            return
         result = subprocess.run([
             "Rscript",
             "examples/rfunctions/agmip.run.r",
@@ -63,9 +67,9 @@ class Controller():
             "examples/regionmap/WorldId.csv",
             "pr",
             "null",
-            start_year,
-            end_year,
-            "yield_soy",
+            str(start_year),
+            str(end_year),
+            yield_var,
             "out.csv",
             "lon",
             "lat",
