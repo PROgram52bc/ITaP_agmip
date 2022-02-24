@@ -6,8 +6,7 @@ import csv
 import glob
 import pandas as pd
 from lib import SyncedProp, ComputedProp
-from os import listdir
-from os.path import isfile, isdir, join
+from nb.utils import get_dir_content
 
 
 
@@ -36,27 +35,19 @@ class Model:
         self.headers = list(self.data.columns.values)
 
         self.radio_selections = { category['label']: SyncedProp(value="") for category in Const.DATA_CATEGORIES }
+
+        # radio_selections -> data_file_path
         self.data_file_path = ComputedProp()
-        self.data_file_path.add_inputs(*self.radio_selections.values())
         self.data_file_path.set_output(self.get_data_file_path)
+
+        # data_file_path -> dropdown_selections
         self.dropdown_selections = ComputedProp((self.data_file_path, "value", "dir"),
-                                                f=lambda **kwargs: self.get_dir_content(kwargs['dir']))
-
-        # Get values for data selection  TODO ennforce data selection limits
-        self.ymin = min(self.data[self.data.columns[0]])
-        self.ymax = max(self.data[self.data.columns[0]])
-
+                                                f=lambda **kwargs: get_dir_content(kwargs['dir']))
+        # data/raw/.../...nc4
+        self.selected_file = ComputedProp()
 
         logger.info('Data load completed')
 
-    def get_dir_content(self, dirpath):
-        """ Get all files from a given directory.
-
-        :dirpath: the path of the directory to be listed.
-        :returns: a list of file names, empty if directory doesn't exist or there is no file in the directory.
-
-        """
-        return [f for f in listdir(dirpath) if isfile(join(dirpath, f))] if isdir(dirpath) else []
 
     def get_data_file_path(self):
         """ Get the data file path based on radio_selections """

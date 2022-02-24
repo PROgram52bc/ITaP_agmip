@@ -167,7 +167,7 @@ class ComputedProp(HasTraits):
             self._cache_values[h] = change['new']
         self.update_value()
 
-    def add_input(self, widget, prop, name=None):
+    def add_input(self, widget, prop="value", name=None):
         """ add a widget's property with the current object.
 
         :widget: the widget whose property is to be taken as an input
@@ -184,6 +184,7 @@ class ComputedProp(HasTraits):
             self._cache_values[h] = getattr(widget, prop)
         # print(f"registering listener on {widget}, {prop}")
         widget.observe(self._update_self, prop)
+        return self
 
     def add_inputs(self, *inputs):
         for i in inputs:

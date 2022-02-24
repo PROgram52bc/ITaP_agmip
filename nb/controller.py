@@ -8,6 +8,7 @@ from matplotlib import pyplot as plt
 import ipywidgets as widgets
 import subprocess
 from lib import SyncedProp
+import os
 
 class Controller():
 
@@ -18,36 +19,39 @@ class Controller():
         global model, view, logger, Const
         from nb.cfg import model, view, logger, Const
 
-        # # Show data preview
-        # with view.data_preview_out:
-        #     display(model.data)
-
-        # Setup callbacks
         try:
-            # Connect UI widgets to callback methods ("cb_...").
-            # These methods will be run when user changes a widget.
-            # NOTE "on_click()" connects buttons, "observe()" connects other widgets.
-            # view.filter_btn_apply.on_click(self.cb_apply_filter)
-            # view.filter_ddn_ndisp.observe(self.cb_ndisp_changed, 'value')
-            # view.filter_btn_refexp.on_click(self.cb_fill_results_export)
-            # view.plot_ddn.observe(self.cb_plot_type_selected, 'value')
-            # view.apply.on_click(self.cb_apply_plot_settings)
-            view.aggregate_btn.on_click(self.cb_hello)
-            for radio in view.radios:
-                p = model.radio_selections[radio.description]
-                p.sync_prop(radio, 'value')
+            view.aggregate_btn.on_click(self.cb_aggregate)
 
+            # model.radio_selections -> view.radios
+            for radio in view.radios:
+                model.radio_selections[radio.description].sync_prop(radio)
+
+            # model.radio_selections -> model.data_file_path
+            model.data_file_path.add_inputs(*model.radio_selections.values())
             model.data_file_path.resync()
+
             # Connect to dropdown selection
+            # model.dropdown_selections -> view.dropdown.options
             SyncedProp() \
                 .add_input_prop(model.dropdown_selections, sync=True) \
                 .add_output_prop(view.dropdown, 'options', sync=True)
+
+            # view.dropdown.value, model.data_file_path -> model.selected_file
+            model.selected_file \
+                .add_input(model.data_file_path, name="path") \
+                .add_input(view.dropdown, name="file") \
+                .set_output(lambda path, file: os.path.join(path, file) if path and file else "")
+
             logger.info('App running')
+
         except Exception:
             logger.debug('Exception while setting up callbacks...\n'+traceback.format_exc())
             raise
 
-    def cb_hello(self, _):
+    def get_yield_variable(self, f):
+        return [ key for key in f.variables.keys() if key.startswith("yield_") ]
+
+    def cb_aggregate(self, _):
         input_file = "data/epic_hadgem2-es_hist_ssp2_co2_firr_yield_soy_annual_1980_2010.nc4"
         start_year = "1980"
         end_year = "2010"
@@ -65,7 +69,7 @@ class Controller():
             "out.csv",
             "lon",
             "lat",
-            "soybean",
+            "soybean", # TODO: let user select weightmap, change the Rscript interface.
             "examples/weightmap/"
         ])
 

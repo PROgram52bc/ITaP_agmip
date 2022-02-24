@@ -120,6 +120,7 @@ class Const:
     EXPORT_BUTTON = 'Create Download Link'
     START_YEAR = 'From Year'
     END_YEAR = 'To Year'
+    WEIGHT_MAP_DIR = 'examples/weightmap/'
 
     # Visualize tab
     NOTE_TITLE = 'Note'

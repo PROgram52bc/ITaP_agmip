@@ -11,6 +11,8 @@ import json
 import csv
 import base64
 import hashlib
+import os
+from nb.utils import get_dir_content
 
 coordinates = [0, 0]
 
@@ -214,6 +216,10 @@ class View:
         self.aggregate_btn = widgets.Button(description="Aggregate")
         self.download_btn = DownloadButton(filename='out.csv', contents=lambda: 'hello', description='Download')
 
+        weightmaps = get_dir_content(Const.WEIGHT_MAP_DIR)
+        self.weight_map_dropdown = widgets.Dropdown(description="Weightmap",
+            options=weightmaps)
+
         # interactive display
         radio_selection_display = self.props(
             model.radio_selections, "Selections")
@@ -235,9 +241,11 @@ class View:
         content.append(
             self.section(
                 "Data Aggregation", [
-                    self.range_slider, self.aggregate_btn, self.download_btn, radio_selection_display]))
+                    self.range_slider, self.weight_map_dropdown,
+                    self.aggregate_btn, self.download_btn, radio_selection_display]))
 
         return widgets.VBox(content)
+
 
     def visualize_content(self):
         '''Create widgets for visualize tab content'''
