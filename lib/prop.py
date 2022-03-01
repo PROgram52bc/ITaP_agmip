@@ -113,9 +113,16 @@ class ComputedProp(HasTraits):
     c2 = ComputedProp((widget, prop), ..., f=output_function)
     c3 = ComputedProp((widget, prop, name), ..., f=output_function)
     f should not have side effects.
+    if any of the named input has a value of None, the output will also be None.
     """
 
     value = Any(read_only=True)
+
+    def __str__(self):
+        return f"ComputedProp(value={self.value}, inputs={self.get_named_inputs()})"
+
+    def get_named_inputs(self):
+        return { name: self._cache_values[tup] for name, tup in self._inputs.items() if tup in self._cache_values }
 
     def __init__(self, *inputs, f=None):
         """ initializer.
@@ -136,7 +143,6 @@ class ComputedProp(HasTraits):
         #     raise ValueError("ComputedProp must be initialized with at least one input tuple or triple.")
 
         self.add_inputs(*inputs)
-        self.update_value()
 
     def update_cache(self):
         """ update the cache value by querying each of the inputs """
@@ -146,12 +152,20 @@ class ComputedProp(HasTraits):
 
     def update_value(self):
         """ update the value based on the cache """
-        self.set_trait('value', self._f(**{ k:self._cache_values[tup] for k, tup in self._inputs.items() }))
+        if None in self._cache_values.values():
+            # TODO: add debug flag <2022-03-01, David Deng> #
+            print(f"None value detected in inputs of computed prop: {self.get_named_inputs()}")
+            newvalue = None
+        else:
+            newvalue = self._f(**{ k:self._cache_values[tup] for k, tup in self._inputs.items() })
+        self.set_trait('value', newvalue)
 
+    # TODO: rename to sync, add to SyncedProp as well <2022-03-01, David Deng> #
     def resync(self):
         """ resync the value attribute """
         self.update_cache()
         self.update_value()
+        return self
 
     def _update_self(self, change):
         """ handle updates from synced props """
@@ -167,7 +181,7 @@ class ComputedProp(HasTraits):
             self._cache_values[h] = change['new']
         self.update_value()
 
-    def add_input(self, widget, prop="value", name=None):
+    def add_input(self, widget, prop="value", name=None, sync=False):
         """ add a widget's property with the current object.
 
         :widget: the widget whose property is to be taken as an input
@@ -177,23 +191,34 @@ class ComputedProp(HasTraits):
         :returns: None
 
         """
+        # only record the value in cache if the input is named
         if name is not None:
             self._inputs[name] = (widget, prop)
             # avoid triggering widget getter multiple times
             h = (widget, prop)
             self._cache_values[h] = getattr(widget, prop)
+        # TODO: turn this into debug flag <2022-03-01, David Deng> #
         # print(f"registering listener on {widget}, {prop}")
         widget.observe(self._update_self, prop)
+        # sync
+        if sync:
+            self.update_value()
+
         return self
 
-    def add_inputs(self, *inputs):
+    def add_inputs(self, *inputs, sync=True):
         for i in inputs:
             if not is_list_unpackable(i):
                 # if i is not a tuple, it is a widget, prop default to 'value'
                 widget = i
                 i = (widget, 'value')
-            self.add_input(*i)
+            # don't update yet, because haven't added all inputs
+            self.add_input(*i, sync=False)
+        if sync:
+            self.update_value()
+        return self
 
     def set_output(self, f):
         """ f takes an expanded **kwargs, """
         self._f = f
+        return self
