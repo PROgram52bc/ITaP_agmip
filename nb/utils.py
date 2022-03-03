@@ -23,4 +23,3 @@ def displayable(prop, label=None):
 def get_yield_variable(f):
     variables = [ key for key in f.variables.keys() if key.startswith("yield_") ]
     return next(iter(variables), None)
-

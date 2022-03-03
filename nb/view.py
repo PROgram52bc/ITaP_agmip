@@ -80,27 +80,20 @@ class View:
         self.figsize2: widgets.FloatSlider
         self.apply: widgets.Button
 
-    def props(self, props, header="Props: "):
-        """ Get an output widget that interactively display the properties stored in a dict """
-        def f(**kwargs):
-            print(header)
-            for k, v in kwargs.items():
-                print(f"{k}: {v}")
-        return widgets.interactive_output(f, props)
+    # def props(self, props, header="Props: "):
+    #     """ Get an output widget that interactively display the properties stored in a dict """
+    #     def f(**kwargs):
+    #         print(header)
+    #         for k, v in kwargs.items():
+    #             print(f"{k}: {v}")
+    #     return widgets.interactive_output(f, props)
 
     def start(self, log=False):
         """Build the user interface."""
 
         # Create module-level singletons
-        global logger, log_handler, Const, model
-        from nb.cfg import logger, log_handler, Const, model
-
-        # Optionally show additional info in log
-        # if log:
-        #     log_handler.setLevel(logging.INFO)
-        #     logger.setLevel(logging.INFO)
-
-        # Create user interface
+        global logger, log_handler, Const, model, notification
+        from nb.cfg import logger, log_handler, Const, model, notification
 
         # Send app's custom styles (CSS code) down to the browser
         display(HTML(filename=Const.CSS_JS_HTML))
@@ -115,6 +108,8 @@ class View:
             logo = widgets.Image(
                 value=logo_file.read(), format='png', layout={
                     'max_height': '32px'})
+
+        self.notification = notification
 
         # Create tabs and fill with UI content (widgets)
 
@@ -138,7 +133,7 @@ class View:
         # Show the app
         header = widgets.HBox([app_title, logo])
         header.layout.justify_content = 'space-between'  # Example of custom widget layout
-        display(widgets.VBox([header, tabs]))
+        display(widgets.VBox([header, self.notification, tabs]))
         logger.info('UI build completed')
 
     def section(self, title, contents):
@@ -178,14 +173,14 @@ class View:
         radio_layout[:, 3] = self.radios[6]
 
         # dropdown
-        self.dropdown = widgets.Dropdown(options=[],
+        self.folder_file_dropdown = widgets.Dropdown(options=[],
                                          description='Select file',
                                          )
 
         content = [radio_layout,
                    displayable(model.data_file_path, "data file path"),
                    displayable(model.selected_file, "selected file"),
-                   self.dropdown]
+                   self.folder_file_dropdown]
 
         return self.section(Const.PREVIEW_SECTION_TITLE, content)
 
@@ -200,27 +195,24 @@ class View:
         self.weight_map_dropdown = widgets.Dropdown(description="Weightmap",
             options=weightmaps)
 
+        self.aggregation_options = widgets.RadioButtons(description="Aggregation Options",
+            style={'description_width': 'auto'},
+            layout={'overflow': 'hidden', 'height': 'auto', 'width': 'auto'},
+            options=Const.AGGREGATION_OPTIONS)
 
-        self.range_slider = widgets.IntRangeSlider(
-            value=[1990, 2010],
-            min=1980,
-            max=2020,
-            step=1,
-            description='Year Range',
-            disabled=False,
-            continuous_update=False,
-            orientation='horizontal',
-            readout=True,
-            readout_format='d',
-        )
+        self.worldids = widgets.Dropdown(description="")
 
         content = []
         content.append(
             self.section(
                 "Data Aggregation", [
-                    displayable(model.selected_file, "selected file"),
-                    self.range_slider, self.weight_map_dropdown,
-                    self.aggregate_btn, self.download_btn]))
+                    displayable(model.selected_file, "Agmip file"),
+                    displayable(model.start_year, "Start year"),
+                    displayable(model.end_year, "End year"),
+                    self.aggregation_options,
+                    self.weight_map_dropdown,
+                    self.aggregate_btn,
+                    self.download_btn]))
 
         return widgets.VBox(content)
 

@@ -3,6 +3,7 @@
 
 import logging
 import ipywidgets as widgets
+import threading
 
 from nb.model import Model
 from nb.view import View
@@ -109,6 +110,9 @@ class Const:
             "tea",
             "wheat", ]}
     ]
+    YEAR_REGEX = r".*(?P<start>[0-9]{4})_(?P<end>[0-9]{4})\.nc4"
+    YEAR_REGEX_START = "start"
+    YEAR_REGEX_END = "end"
 
     # Selection tab
     CRITERIA_TITLE = 'Selection Criteria'
@@ -121,6 +125,12 @@ class Const:
     START_YEAR = 'From Year'
     END_YEAR = 'To Year'
     WEIGHT_MAP_DIR = 'examples/weightmap/'
+    AGGREGATION_OPTIONS = [
+        ('Regional Production', 'pr'),
+        ('Regional Yields', 'yi'),
+        ('Summary Statistics', 'st'),
+        ('Regional Weighted-Average Yields', 'wa')
+    ]
 
     # Visualize tab
     NOTE_TITLE = 'Note'
@@ -166,7 +176,7 @@ class NotebookLoggingHandler(logging.Handler):
         self.setFormatter(logging.Formatter(
             '[%(levelname)s] %(message)s (%(filename_lineno)s)'))
         self.setLevel(log_level)
-        self.log_output_widget = widgets.Output()
+        self.log_output_widget = widgets.Output(layout={'overflow_y': 'auto', 'height': '500px'})
 
     def emit(self, record):
         """Write message to log"""
@@ -178,6 +188,18 @@ class NotebookLoggingHandler(logging.Handler):
 
 
 # Singletons
+notification = widgets.Output(layout={'display': 'none',
+                                      'border': '1px solid black'}) # hide by default
+
+def send_notification(msg, hide_in=5):
+    notification.layout.display = '' # display it
+    notification.clear_output() # clear previous output
+    with notification:
+        print(msg)
+    def hide_notification():
+        notification.layout.display = 'none'
+    threading.Timer(hide_in, hide_notification).start() # hide the notification later
+
 logger = logging.getLogger(__name__)
 log_handler = NotebookLoggingHandler(logging.DEBUG)
 logger.addHandler(log_handler)

@@ -19,25 +19,14 @@ read.AgMIP.nc <- function(file, start_year, end_year, yield_crop, var_lon, var_l
     ## Read yields (an array of 720X360X6):
     yield <- ncvar_get(ncfile, varid=yield_crop)
 
-    print("length(dim(yield))")
-    print(length(dim(yield)))
-
     # Change to three dimensional data
     if(length(dim(yield))==2) {
         yield <- array(yield, dim=c(dim(yield)[1], dim(yield)[2], 1))
     }
     ## Assign the longitudes and latitudes to facilitate merging with
     ## the other files:
-    ## DEBUG
-    print("paste(lon, lat, time)")
-    print(paste(lon, lat, time))
-    print("dimnames(yield)")
-    print(dimnames(yield))
 
     dimnames(yield) <- list(lon,lat,time)
-
-    print("dimnames(yield)")
-    print(dimnames(yield))
 
     ## Set non-land areas to NA before further processing:
     fillvalue <- ncatt_get(ncfile,yield_crop,"_FillValue")

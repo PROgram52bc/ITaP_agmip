@@ -7,8 +7,7 @@ import glob
 import pandas as pd
 from lib import SyncedProp, ComputedProp
 from nb.utils import get_dir_content
-
-
+import re
 
 class Model:
 
@@ -34,24 +33,41 @@ class Model:
         self.data = pd.read_csv(os.path.join(Const.DATA_DIR, Const.DATA_FILE), escapechar='#')
         self.headers = list(self.data.columns.values)
 
-        self.radio_selections = { category['label']: SyncedProp(value="") for category in Const.DATA_CATEGORIES }
+        self.radio_selections = { category['label']: SyncedProp(value=None) for category in Const.DATA_CATEGORIES }
 
         # radio_selections -> data_file_path
         self.data_file_path = ComputedProp()
         self.data_file_path.set_output(self.get_data_file_path)
 
         # data_file_path -> dropdown_selections
-        self.dropdown_selections = ComputedProp((self.data_file_path, "value", "dir"),
-                                                f=lambda **kwargs: get_dir_content(kwargs['dir']))
+        self.dropdown_selections = ComputedProp() \
+            .add_input(self.data_file_path, "value", "path") \
+            .set_output(f=lambda path: get_dir_content(path))
+
         # data/raw/.../...nc4
         self.selected_file = ComputedProp()
+
+        year_regex = re.compile(Const.YEAR_REGEX)
+        self.start_year = ComputedProp() \
+            .add_input(self.selected_file, 'value', 'path') \
+            .set_output(lambda path: year_regex.match(path).group(Const.YEAR_REGEX_START))
+
+        self.end_year = ComputedProp() \
+            .add_input(self.selected_file, 'value', 'path') \
+            .set_output(lambda path: year_regex.match(path).group(Const.YEAR_REGEX_END))
+
+        self.data_aggregated = SyncedProp(value=False)
 
         logger.info('Data load completed')
 
 
     def get_data_file_path(self):
         """ Get the data file path based on radio_selections """
-        return os.path.join("data/raw", *[p.value for p in self.radio_selections.values() if p.value is not None])
+        path_segments = [ p.value for p in self.radio_selections.values() ]
+        if None in path_segments:
+            return None
+        else:
+            return os.path.join("data/raw", *[p.value for p in self.radio_selections.values() if p.value is not None])
 
     def set_disp(self, data=None, limit=None, wide=False):
         """Prep Pandas to display specific number of data lines."""

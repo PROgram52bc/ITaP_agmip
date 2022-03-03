@@ -133,7 +133,7 @@ class ComputedProp(HasTraits):
 
         """
         if f is None:
-            f = lambda **kwargs: str(kwargs)
+            f = lambda **kwargs: str(kwargs) if kwargs else None
         self.set_output(f)
 
         self._inputs = {} # { name: (widget, prop), ... }
@@ -154,7 +154,7 @@ class ComputedProp(HasTraits):
         """ update the value based on the cache """
         if None in self._cache_values.values():
             # TODO: add debug flag <2022-03-01, David Deng> #
-            print(f"None value detected in inputs of computed prop: {self.get_named_inputs()}")
+            # print(f"None value detected in inputs of computed prop: {self.get_named_inputs()}")
             newvalue = None
         else:
             newvalue = self._f(**{ k:self._cache_values[tup] for k, tup in self._inputs.items() })

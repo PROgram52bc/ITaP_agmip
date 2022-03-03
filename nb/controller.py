@@ -18,8 +18,8 @@ class Controller():
         """Begin running the app."""
 
         # Create module-level singletons
-        global model, view, logger, Const
-        from nb.cfg import model, view, logger, Const
+        global model, view, logger, Const, send_notification
+        from nb.cfg import model, view, logger, Const, send_notification
 
         try:
             view.aggregate_btn.on_click(self.cb_aggregate)
@@ -36,13 +36,13 @@ class Controller():
             # model.dropdown_selections -> view.dropdown.options
             SyncedProp() \
                 .add_input_prop(model.dropdown_selections, sync=True) \
-                .add_output_prop(view.dropdown, 'options', sync=True)
+                .add_output_prop(view.folder_file_dropdown, 'options', sync=True)
 
             # view.dropdown.value, model.data_file_path -> model.selected_file
             model.selected_file \
                 .add_input(model.data_file_path, name="path") \
-                .add_input(view.dropdown, name="file") \
-                .set_output(lambda path, file: os.path.join(path, file) if path and file else "")
+                .add_input(view.folder_file_dropdown, name="file") \
+                .set_output(lambda path, file: os.path.join(path, file))
 
             logger.info('App running')
 
@@ -51,33 +51,50 @@ class Controller():
             raise
 
     def cb_aggregate(self, _):
+        # input_file = "data/epic_hadgem2-es_hist_ssp2_co2_firr_yield_soy_annual_1980_2010.nc4"
         input_file = model.selected_file.value
-        input_file = "data/epic_hadgem2-es_hist_ssp2_co2_firr_yield_soy_annual_1980_2010.nc4"
-        start_year, end_year = view.range_slider.value
+        if input_file is None:
+            send_notification("Trying to aggregate without an input file selected")
+            return
+        aggregation_option = view.aggregation_options.value
+        start_year = model.start_year.value
+        end_year = model.end_year.value
+        if start_year is None:
+            send_notification("Trying to aggregate with start year of None")
+            return
+        if end_year is None:
+            send_notification("Trying to aggregate with end year of None")
+            return
+
         with netCDF4.Dataset(input_file) as f:
             yield_var = get_yield_variable(f)
         if yield_var is None:
-            logger.error(f"Cannot get yield variable from file {input_file}")
+            send_notification("Trying to aggregate with yield_var of None")
             return
-        result = subprocess.run([
+
+        cmd = [
             "Rscript",
             "examples/rfunctions/agmip.run.r",
             "examples/rfunctions/agmip.fns.r",
             input_file,
             "examples/regionmap/WorldId.csv",
-            "pr",
+            aggregation_option,
             "null",
-            str(start_year),
-            str(end_year),
+            start_year,
+            end_year,
             yield_var,
             "out.csv",
             "lon",
             "lat",
             "soybean", # TODO: let user select weightmap, change the Rscript interface.
             "examples/weightmap/"
-        ])
-
-        logger.info(str(result))
+        ]
+        result = subprocess.run(cmd, capture_output=True)
+        logger.info(" ".join(cmd))
+        if result.returncode != 0:
+            logger.error(f"R script failed with return code {result.returncode}: {result.stderr.decode('utf-8')}")
+        else:
+            logger.info(f"R script completed: {result.stdout.decode('utf-8')}")
 
     def cb_fill_results_export(self, _):
         """React to user pressing button to download results."""
