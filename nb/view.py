@@ -6,22 +6,18 @@ from ipyleaflet import Map, Marker, Popup, WidgetControl, Choropleth
 from IPython.display import HTML, display, clear_output, FileLink
 import logging
 from branca.colormap import linear
-from typing import Callable
-import json
-import csv
-import base64
-import hashlib
-import os
 from nb.utils import get_dir_content, displayable
 
-coordinates = [0, 0]
-
+# TODO: use filelink instead. <2022-03-04, David Deng> #
 # https://stackoverflow.com/questions/61708701/how-to-download-a-file-using-ipywidget-button
 class DownloadButton(widgets.Button):
     """Download button with dynamic content
 
     The content is generated using a callback when the button is clicked.
     """
+    import base64
+    import hashlib
+    from typing import Callable
 
     def __init__(self, filename: str, contents: Callable[[], str], **kwargs):
         super(DownloadButton, self).__init__(**kwargs)
@@ -130,10 +126,12 @@ class View:
 
         tabs.children = tuple(tab_content)  # Fill tabs with content
 
+        log = self.section("Log", [log_handler.log_output_widget])
+
         # Show the app
         header = widgets.HBox([app_title, logo])
         header.layout.justify_content = 'space-between'  # Example of custom widget layout
-        display(widgets.VBox([header, self.notification, tabs]))
+        display(widgets.VBox([header, self.notification, tabs, log]))
         logger.info('UI build completed')
 
     def section(self, title, contents):
@@ -150,7 +148,6 @@ class View:
         '''Create widgets for introductory tab content'''
         content = []
         content.append(self.section(Const.USING_TITLE, Const.USING_TEXT))
-        content.append(self.section("Log", [log_handler.log_output_widget]))
         return widgets.VBox(content)
 
     def data_content(self):
@@ -187,18 +184,19 @@ class View:
     def aggregation_content(self):
         '''Create widgets for selection tab content'''
 
-        self.aggregate_btn = widgets.Button(description="Aggregate")
+        self.aggregate_btn = widgets.Button(description="Aggregate and Render Map")
         self.download_btn = DownloadButton(filename='aggregated.csv', contents=lambda: 'hello', description='Download')
 
         # static dropdown
         weightmaps = get_dir_content(Const.WEIGHT_MAP_DIR)
-        self.weight_map_dropdown = widgets.Dropdown(description="Weightmap",
-            options=weightmaps)
 
         self.aggregation_options = widgets.RadioButtons(description="Aggregation Options",
             style={'description_width': 'auto'},
             layout={'overflow': 'hidden', 'height': 'auto', 'width': 'auto'},
             options=Const.AGGREGATION_OPTIONS)
+
+        self.weight_map_dropdown = widgets.Dropdown(description="Weightmap",
+            options=weightmaps)
 
         self.worldids = widgets.Dropdown(description="")
 
@@ -220,101 +218,39 @@ class View:
     def visualize_content(self):
         '''Create widgets for visualize tab content'''
         content = []
-
         center = (0, 0)
-
-# read prod data
-        with open('data/countries.geo.json', 'r') as f:
-            geodata = json.load(f)
-
-        country_keys = [d['id'] for d in geodata['features']]
-        countries = dict.fromkeys(country_keys, 0.0)
 
 
 # create map
         content = []
 
-        m = Map(center=center, zoom=2, close_popup_on_click=True)
-        self.map = m
+        self.map = Map(center=center, zoom=2, close_popup_on_click=True)
 
-        def cb_map(**kwargs):
-            if (kwargs['type'] == 'preclick'):
-                global coordinates
-                coordinates = kwargs['coordinates']
-                # popup.close_popup()
-                # print(coordinates)
-
-        m.on_interaction(cb_map)
-
-# prod_data = {1980: { 'AFG': 0, 'AGO': 135, ...}}
-        prod_data = {}
-        with open('data/out.csv', 'r') as f:
-            for row in csv.DictReader(f):
-                year = int(row['time'])
-                country = row['id']
-                production = float(row['production'])
-                prod_data.setdefault(year, countries.copy())
-                if country in prod_data[year]:
-                    prod_data[year][country] = production
-                else:
-                    logger.warning(f"{country} not in dict")
-
-        choro_data = prod_data[1980]
-        choro = Choropleth(
-            data=geodata.copy(),
+        self.choro = Choropleth(
             hover_style={
                 'color': 'white', 'dashArray': '0', 'fillOpacity': 0.5
             },
-            geo_data=geodata.copy(),
-            choro_data=choro_data,
             colormap=linear.YlOrRd_04,
             border_color='black',
             style={'fillOpacity': 0.8, 'dashArray': '5, 5'})
 
+        self.map.add_layer(self.choro)
 
-# todo: use widget control, parameterize year range
-# create slider
-        zoom_slider = widgets.IntSlider(
-            description='Year', min=1990, max=2020, value=1990)
-        render_button = widgets.Button(description="Render")
+        self.zoom_slider = widgets.IntSlider(description='Year')
+        zscontrol = WidgetControl(widget=self.zoom_slider, position="bottomleft", transparent_bg=True)
+        self.map.add_control(zscontrol)
 
-        content.append(widgets.HBox([zoom_slider, render_button]))
-        content.append(m)
+        colormap = widgets.Output()
+        colormap.append_display_data(linear.YlOrRd_04.to_step(n=6))
+        cmcontrol = WidgetControl(widget=colormap, position="topright", transparent_bg=True)
+        self.map.add_control(cmcontrol)
 
-# todo: use a computed prop to sync
-        def on_value_change(change):
-            # print(change)
-            new_year = change['new']
-            if new_year not in prod_data:
-                logger.debug(f"Map: no data for year {new_year}")
-            else:
-                choro.choro_data = prod_data[new_year]
-        zoom_slider.observe(on_value_change, names='value')
+        self.popup = Popup(location=(0,0), close_button=True, auto_close=True, close_on_escape_key=True)
+        self.map.add_layer(self.popup)
 
-        def cb_geojson(**kwargs):
-            # kwargs = {'event': 'click', 'feature': {'type': 'Feature',
-            # 'properties': {'ADMIN': 'Ivory Coast', 'ISO_A3': 'CIV', 'style':
-            # {'color': 'black', 'fillColor': 'red'}}, 'geometry': ..., ...}
-            # print(coordinates)
-            popup.open_popup(coordinates)
-            feature_id = kwargs['feature']['id']
-            popup.child = widgets.HTML(feature_id)
-
-        choro.on_click(cb_geojson)
-
-        m.add_layer(choro)
-
-# create popup
-        popup = Popup(
-            location=center,
-            close_button=True,
-            auto_close=True,
-            close_on_escape_key=True
-        )
-        m.add_layer(popup)
-# todo: how to close popup on start?
-# popup.close_popup()
+        content.append(self.map)
         return self.section("Map", content)
+
 
     def settings_content(self):
         """Create widgets for settings tab."""

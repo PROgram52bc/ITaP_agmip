@@ -137,6 +137,12 @@ class Const:
     NOTE_TEXT = 'The plot is based on results from the Selection tab.'
     PLOT_TITLE = 'Plot'
     PLOT_LABEL = 'Select data field'
+    PRIMARY_VAR = {
+        'pr': 'production',
+        'yi': 'harea.w.yield',
+        'st': 'mean',
+        'wa': 'TODO',
+    }
 
     # Setting tab
     PLOT_SETTINGS_SECTION_TITLE = 'Plot Settings'
@@ -176,7 +182,7 @@ class NotebookLoggingHandler(logging.Handler):
         self.setFormatter(logging.Formatter(
             '[%(levelname)s] %(message)s (%(filename_lineno)s)'))
         self.setLevel(log_level)
-        self.log_output_widget = widgets.Output(layout={'overflow_y': 'auto', 'height': '500px'})
+        self.log_output_widget = widgets.Output(layout={'overflow_y': 'auto', 'max_height': '500px'})
 
     def emit(self, record):
         """Write message to log"""
@@ -189,7 +195,9 @@ class NotebookLoggingHandler(logging.Handler):
 
 # Singletons
 notification = widgets.Output(layout={'display': 'none',
-                                      'border': '1px solid black'}) # hide by default
+                                      'border': '1px solid black',
+                                      'padding': '2px 0px 2px 0px'
+                                      }) # hide by default
 
 def send_notification(msg, hide_in=5):
     notification.layout.display = '' # display it

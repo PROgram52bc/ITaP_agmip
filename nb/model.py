@@ -19,6 +19,7 @@ class Model:
         self.headers: list
         self.ymin: int
         self.ymax: int
+        self.coordinates: list = [0,0]
 
         pd.set_option('display.width', 1000)  # Prevent data desc line breaking
 
@@ -50,13 +51,19 @@ class Model:
         year_regex = re.compile(Const.YEAR_REGEX)
         self.start_year = ComputedProp() \
             .add_input(self.selected_file, 'value', 'path') \
-            .set_output(lambda path: year_regex.match(path).group(Const.YEAR_REGEX_START))
+            .set_output(lambda path: int(year_regex.match(path).group(Const.YEAR_REGEX_START)))
 
         self.end_year = ComputedProp() \
             .add_input(self.selected_file, 'value', 'path') \
-            .set_output(lambda path: year_regex.match(path).group(Const.YEAR_REGEX_END))
+            .set_output(lambda path: int(year_regex.match(path).group(Const.YEAR_REGEX_END)))
 
         self.data_aggregated = SyncedProp(value=False)
+
+
+        self.prod_data = SyncedProp(value=None) # production data
+
+        # choropleth data based on the selected year
+        self.choro_data = ComputedProp()
 
         logger.info('Data load completed')
 

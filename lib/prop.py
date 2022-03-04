@@ -64,9 +64,23 @@ class SyncedProp(HasTraits):
             Default to True.
         """
         widget.observe(self._update_self, prop)
+        self._input_props.add((widget, prop))
         if sync:
             self.value = getattr(widget, prop)
         return self
+
+    # def resync(self):
+    #     """ resync the value attribute """
+    #     value = None
+    #     for (widget, prop) in self._input_props:
+    #         # TODO: complete this function <2022-03-04, David Deng> #
+    #         # assert all inputs have the same value
+    #         # future: name each input element, and sync based on a specific input, if they are not all equal
+    #         # can use itertools.groupby https://stackoverflow.com/questions/3844801/check-if-all-elements-in-a-list-are-identical
+    #         # <2022-03-04, David Deng> #
+    #         value = ...
+    #         pass
+    #     self._update_self(value)
 
     def add_output_prop(self, widget, prop='value', sync=False):
         """ Listen to a widget's property without modifying it when our own value changes.
@@ -98,7 +112,7 @@ class SyncedProp(HasTraits):
             sync_input = True
         elif source == 'self':
             sync_output = True
-        elif source == 'None':
+        elif source == 'none':
             pass
         else:
             raise ValueError("The source parameter must be one of 'self', 'prop', or 'none'.")

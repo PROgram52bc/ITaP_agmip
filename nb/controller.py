@@ -11,6 +11,8 @@ from lib import SyncedProp
 import os
 from nb.utils import get_yield_variable
 import netCDF4
+import json
+import csv
 
 class Controller():
 
@@ -44,11 +46,36 @@ class Controller():
                 .add_input(view.folder_file_dropdown, name="file") \
                 .set_output(lambda path, file: os.path.join(path, file))
 
+            # view.zoom_slider.value + model.prod_data.value -> model.choro_data.value
+            model.choro_data \
+                .add_input(view.zoom_slider, 'value', 'selected_year') \
+                .add_input(model.prod_data, 'value', 'prod_data') \
+                .set_output(lambda prod_data, selected_year: prod_data.get(selected_year))
+
+            # add callback to map
+            view.map.on_interaction(self.cb_set_coordinates)
+            view.choro.on_click(self.cb_popup)
+
+            # model.choro_data.value <-> view.choro.choro_data
+            SyncedProp() \
+                .add_input_prop(model.choro_data) \
+                .add_output_prop(view.choro, 'choro_data')
+
             logger.info('App running')
 
         except Exception:
             logger.debug('Exception while setting up callbacks...\n'+traceback.format_exc())
             raise
+
+    def cb_popup(self, **kwargs):
+        view.popup.open_popup(model.coordinates)
+        feature_id = kwargs['feature']['id']
+        view.popup.child = widgets.HTML(feature_id)
+
+    def cb_set_coordinates(self, **kwargs):
+        if (kwargs['type'] == 'preclick'):
+            # record the coordinate clicked
+            model.coordinates = kwargs['coordinates']
 
     def cb_aggregate(self, _):
         # input_file = "data/epic_hadgem2-es_hist_ssp2_co2_firr_yield_soy_annual_1980_2010.nc4"
@@ -80,8 +107,8 @@ class Controller():
             "examples/regionmap/WorldId.csv",
             aggregation_option,
             "null",
-            start_year,
-            end_year,
+            str(start_year),
+            str(end_year),
             yield_var,
             "out.csv",
             "lon",
@@ -91,10 +118,67 @@ class Controller():
         ]
         result = subprocess.run(cmd, capture_output=True)
         logger.info(" ".join(cmd))
-        if result.returncode != 0:
-            logger.error(f"R script failed with return code {result.returncode}: {result.stderr.decode('utf-8')}")
-        else:
+        if result.returncode == 0:
             logger.info(f"R script completed: {result.stdout.decode('utf-8')}")
+            send_notification("Successfully aggregated data!")
+            self.cb_draw_map(None)
+        else:
+            logger.error(f"R script failed with return code {result.returncode}: {result.stderr.decode('utf-8')}")
+
+
+    def cb_draw_map(self, _):
+        logger.info("Drawing map...")
+        primary_variable = Const.PRIMARY_VAR.get(view.aggregation_options.value)
+
+        logger.info("primary_variable: {}".format(primary_variable))
+
+        # retrieve and process all data
+        with open('data/countries.geo.json', 'r') as f:
+            geodata = json.load(f)
+        country_keys = [d['id'] for d in geodata['features']]
+        countries = dict.fromkeys(country_keys, 0.0)
+
+        # update prod_data
+        prod_data = {}
+        # prod_data = {1980: { 'AFG': 0, 'AGO': 135, ...}}
+        with open('out.csv', 'r') as f:
+            for row in csv.DictReader(f):
+                year = int(row['time'])
+                country = row['id']
+                value = float(row[primary_variable])
+                prod_data.setdefault(year, countries.copy())
+                if country in prod_data[year]:
+                    prod_data[year][country] = value
+                else:
+                    logger.warning(f"{country} not in dict for year {year}")
+
+        model.prod_data.value = prod_data
+
+        # requires choro_data to be set before setting geodata
+        view.choro.choro_data = prod_data[model.start_year.value]
+        view.choro.data = geodata.copy()
+        view.choro.geo_data = geodata.copy()
+        # view.choro.choro_data = choro_data
+
+        view.popup.close_popup() # close the popup
+
+        # TODO: first set to 0 to prevent min > max error <2022-03-04, David Deng> #
+        view.zoom_slider.max = model.end_year.value
+        view.zoom_slider.min = model.start_year.value
+        view.zoom_slider.value = model.start_year.value
+
+        send_notification("Finished drawing map")
+
+# todo: use a computed prop to sync
+        # def on_value_change(change):
+        #     # print(change)
+        #     new_year = change['new']
+        #     if new_year not in prod_data:
+        #         logger.debug(f"Map: no data for year {new_year}")
+        #     else:
+        #         view.choro.choro_data = prod_data[new_year]
+        # view.zoom_slider.observe(on_value_change, names='value')
+
 
     def cb_fill_results_export(self, _):
         """React to user pressing button to download results."""
