@@ -76,6 +76,9 @@ class View:
         self.figsize2: widgets.FloatSlider
         self.apply: widgets.Button
 
+        # Style related
+        self.colormap = linear.YlOrRd_04
+
     # def props(self, props, header="Props: "):
     #     """ Get an output widget that interactively display the properties stored in a dict """
     #     def f(**kwargs):
@@ -230,7 +233,7 @@ class View:
             hover_style={
                 'color': 'white', 'dashArray': '0', 'fillOpacity': 0.5
             },
-            colormap=linear.YlOrRd_04,
+            colormap=self.colormap,
             border_color='black',
             style={'fillOpacity': 0.8, 'dashArray': '5, 5'})
 
@@ -240,9 +243,9 @@ class View:
         zscontrol = WidgetControl(widget=self.zoom_slider, position="bottomleft", transparent_bg=True)
         self.map.add_control(zscontrol)
 
-        colormap = widgets.Output()
-        colormap.append_display_data(linear.YlOrRd_04.to_step(n=6))
-        cmcontrol = WidgetControl(widget=colormap, position="topright", transparent_bg=True)
+        cm = widgets.Output()
+        cm.append_display_data(self.colormap.to_step(n=6))
+        cmcontrol = WidgetControl(widget=cm, position="topright", transparent_bg=True)
         self.map.add_control(cmcontrol)
 
         self.popup = Popup(location=(0,0), close_button=True, auto_close=True, close_on_escape_key=True)

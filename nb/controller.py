@@ -6,6 +6,7 @@ from IPython.display import display, clear_output, FileLink
 from jupyterthemes import jtplot
 from matplotlib import pyplot as plt
 import ipywidgets as widgets
+from ipyleaflet import Choropleth
 import subprocess
 from lib import SyncedProp
 import os
@@ -154,18 +155,37 @@ class Controller():
 
         model.prod_data.value = prod_data
 
-        # requires choro_data to be set before setting geodata
-        view.choro.choro_data = prod_data[model.start_year.value]
-        view.choro.data = geodata.copy()
-        view.choro.geo_data = geodata.copy()
-        # view.choro.choro_data = choro_data
-
-        view.popup.close_popup() # close the popup
-
         # TODO: first set to 0 to prevent min > max error <2022-03-04, David Deng> #
         view.zoom_slider.max = model.end_year.value
         view.zoom_slider.min = model.start_year.value
         view.zoom_slider.value = model.start_year.value
+
+        # TODO: Fix Choropleth so that can automatically trigger update upon changing choro_data without creating new instance?
+        # See https://github.com/jupyter-widgets/ipyleaflet/pull/271
+        # <2022-03-08, David Deng> #
+
+        # first remove the old layer.
+        view.map.remove_layer(view.choro)
+
+        # create a new choropleth layer
+        view.choro = Choropleth(
+            geo_data=geodata,
+            choro_data=model.choro_data.value,
+            hover_style={
+                'color': 'white', 'dashArray': '0', 'fillOpacity': 0.5
+            },
+            colormap=view.colormap,
+            border_color='black',
+            style={'fillOpacity': 0.8, 'dashArray': '5, 5'})
+        view.map.add_layer(view.choro)
+
+        # model.choro_data.value -> view.choro.choro_data
+        SyncedProp() \
+            .add_input_prop(model.choro_data) \
+            .add_output_prop(view.choro, 'choro_data')
+
+        view.popup.close_popup() # close the popup
+
 
         send_notification("Finished drawing map")
 
