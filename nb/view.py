@@ -117,28 +117,32 @@ class View:
         radio_layout[:, 3] = self.radios[6]
 
         # download button
-        self.raw_download_btn = DownloadButton(filename='aggregated.csv', contents=lambda: 'hello', description='Download')
+        # self.raw_download_btn = DownloadButton(filename=model.selected_file.value, contents=lambda: 'hello', description='Download')
 
         # dropdown
         self.folder_file_dropdown = widgets.Dropdown(options=[],
                                          description='Select file',
                                          )
 
-        content = [radio_layout,
-                   displayable(model.data_file_path, "data file path"),
-                   displayable(model.selected_file, "selected file"),
-                   self.folder_file_dropdown,
-                   self.raw_download_btn]
+        content = [
+            radio_layout,
+            displayable(model.data_file_path, "data file path"),
+            displayable(model.selected_file, "selected file"),
+            self.folder_file_dropdown,
+            # self.raw_download_btn
+                   ]
 
         return self.section(Const.PREVIEW_SECTION_TITLE, content)
 
     def aggregation_content(self):
         '''Create widgets for selection tab content'''
 
-        self.aggregate_btn = widgets.Button(description="Aggregate and Render Map")
+        self.aggregate_btn = widgets.Button(description="Aggregate and Render Map", layout={'width': 'auto'})
 
-        # TODO: use filelink instead. <2022-03-04, David Deng> #
-        self.aggregated_download_btn = DownloadButton(filename='aggregated.csv', contents=lambda: 'hello', description='Download')
+        # TODO: 
+        # store the generated file and enable download in the map page
+        # Separate aggregate and render?
+        # self.aggregated_download_btn = DownloadButton(filename='aggregated.csv', contents=lambda: 'hello', description='Download')
 
         # static dropdown
         weightmaps = get_dir_content(Const.WEIGHT_MAP_DIR)
@@ -163,7 +167,8 @@ class View:
                     self.aggregation_options,
                     self.weight_map_dropdown,
                     self.aggregate_btn,
-                    self.aggregated_download_btn]))
+                    # self.aggregated_download_btn
+                ]))
 
         return widgets.VBox(content)
 

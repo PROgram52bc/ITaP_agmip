@@ -53,6 +53,12 @@ class Model:
         # data/raw/.../...nc4
         self.selected_file = ComputedProp()
 
+        # TODO: use a transform property in SyncedProp <2022-03-19, David Deng> #
+        # FIXME: None propagation prevent this from working <2022-03-19, David Deng> #
+        # self.no_selected_file = ComputedProp() \
+        #     .add_input(self.selected_file, 'value', 'f') \
+        #     .set_output(lambda f: not bool(f))
+
         year_regex = re.compile(Const.YEAR_REGEX)
         self.start_year = ComputedProp() \
             .add_input(self.selected_file, 'value', 'path') \

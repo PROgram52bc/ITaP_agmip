@@ -56,6 +56,11 @@ class Controller():
             # add callback to map
             view.map.on_interaction(self.cb_set_coordinates)
 
+            # TODO: Fix non-propagation <2022-03-19, David Deng> #
+            # SyncedProp() \
+            #     .add_input_prop(model.no_selected_file, sync=True) \
+            #     .add_output_prop(view.raw_download_btn, 'disabled', sync=True)
+
 
             # TODO: Fix Choropleth so that can automatically trigger update upon changing choro_data without creating new instance?
             # This is also challenging because Choropleth's choro_data attribute is very picky. E.g. no empty value allowed, etc.

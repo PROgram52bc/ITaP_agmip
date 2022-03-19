@@ -223,7 +223,7 @@ def send_notification(msg, hide_in=5):
     threading.Timer(hide_in, hide_notification).start() # hide the notification later
 
 logger = logging.getLogger(__name__)
-log_handler = NotebookLoggingHandler(logging.DEBUG)
+log_handler = NotebookLoggingHandler(logging.INFO)
 logger.addHandler(log_handler)
 logger.addFilter(AppendFileLineToLog())
 logger.setLevel(logging.DEBUG)

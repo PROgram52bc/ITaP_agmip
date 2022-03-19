@@ -8,6 +8,7 @@ from statistics import quantiles
 import base64
 import hashlib
 from typing import Callable
+from IPython.display import HTML
 
 def is_float(n):
     """check if number is float

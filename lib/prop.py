@@ -129,6 +129,7 @@ class ComputedProp(HasTraits):
     f should not have side effects.
     if any of the named input has a value of None, the output will also be None.
     """
+    # TODO: The None propagation can be inconvenient when we want to cast to a boolean <2022-03-19, David Deng> #
 
     value = Any(read_only=True)
 
