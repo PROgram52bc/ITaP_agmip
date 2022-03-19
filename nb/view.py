@@ -6,7 +6,7 @@ from ipyleaflet import Map, Marker, Popup, WidgetControl, Choropleth
 from IPython.display import HTML, display, clear_output, FileLink
 import logging
 from branca.colormap import linear
-from nb.utils import get_dir_content, displayable, DownloadButton, get_colormap
+from nb.utils import get_dir_content, displayable, DownloadButton, get_colormap, is_float
 
 
 class View:
@@ -195,13 +195,30 @@ class View:
         # self.popup = Popup(location=(0,0), close_button=True, auto_close=True, close_on_escape_key=True)
         # self.map.add_layer(self.popup)
 
-        self.mapinfo = widgets.Output(layout={'height': '500px'})
-        with self.mapinfo:
-            print("Initial content")
+        self.mapinfo = widgets.interactive_output(self.render_mapinfo, {
+            'Selected Country': model.selected_country,
+            'Production': model.selected_value,
+            'Minimum Value': model.choro_data_min,
+            'Maximum Value': model.choro_data_max,
+            'Standard Deviation': model.choro_data_stdev,
+            'Quantiles': model.choro_data_quantiles,
+        })
 
         content.append(self.map)
         content.append(self.mapinfo)
         return self.section("Map", content)
+
+    def render_mapinfo(self, **kwargs):
+        for k,v in kwargs.items():
+            if k == "Quantiles":
+                print(f"1st Quantile: {round(v[0], 2)}")
+                print(f"2st Quantile: {round(v[1], 2)}")
+                print(f"3st Quantile: {round(v[2], 2)}")
+            else:
+                # if is_float(v):
+                #     print(f"{k}: {round(v, 2)}")
+                # else:
+                print(f"{k}: {v}")
 
     def refresh_map_colormap(self):
         # replace the colormap legend control

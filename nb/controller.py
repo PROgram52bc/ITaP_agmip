@@ -51,13 +51,11 @@ class Controller():
             model.choro_data \
                 .add_input(view.zoom_slider, 'value', 'selected_year') \
                 .add_input(model.prod_data, 'value', 'prod_data') \
-                .set_output(lambda prod_data, selected_year: prod_data.get(selected_year, {}))
+                .set_output(lambda prod_data, selected_year: prod_data.get(selected_year, None))
 
             # add callback to map
             view.map.on_interaction(self.cb_set_coordinates)
 
-            # TODO: fix popup <2022-03-19, David Deng> #
-            # view.choro.on_click(self.cb_popup)
 
             # TODO: Fix Choropleth so that can automatically trigger update upon changing choro_data without creating new instance?
             # This is also challenging because Choropleth's choro_data attribute is very picky. E.g. no empty value allowed, etc.
@@ -80,10 +78,11 @@ class Controller():
         self.refresh_map()
 
     def cb_popup(self, **kwargs):
-        pass
-        view.popup.open_popup(model.coordinates)
-        feature_id = kwargs['feature']['id']
-        view.popup.child = widgets.HTML(feature_id)
+        model.selected_country.value = kwargs['feature']['id']
+        # TODO: fix popup <2022-03-19, David Deng> #
+        # view.popup.open_popup(model.coordinates)
+        # feature_id = kwargs['feature']['id']
+        # view.popup.child = widgets.HTML(feature_id)
 
     def cb_set_coordinates(self, **kwargs):
         if (kwargs['type'] == 'preclick'):
@@ -181,6 +180,7 @@ class Controller():
         view.zoom_slider.value = model.start_year.value
 
         view.reset_map_choro(model.choro_data.value)
+        view.choro.on_click(self.cb_popup)
 
         self.refresh_map()
 

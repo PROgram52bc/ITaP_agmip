@@ -9,6 +9,7 @@ from lib import SyncedProp, ComputedProp
 from nb.utils import get_dir_content
 import re
 import json
+from statistics import stdev, quantiles
 
 class Model:
 
@@ -61,13 +62,44 @@ class Model:
             .add_input(self.selected_file, 'value', 'path') \
             .set_output(lambda path: int(year_regex.match(path).group(Const.YEAR_REGEX_END)))
 
-        self.data_aggregated = SyncedProp(value=False)
-
 
         self.prod_data = SyncedProp(value=None) # production data
 
         # choropleth data based on the selected year
         self.choro_data = ComputedProp()
+
+        # mapinfo related data
+        self.selected_country = SyncedProp(value=None) #
+        self.selected_value = ComputedProp() \
+            .add_input(self.selected_country, name="country") \
+            .add_input(self.choro_data, name="data") \
+            .set_output(lambda country, data: data.get(country, 0))
+
+        # TODO: how to statically bind fn?
+        # for fn in [max, min, stdev, quantiles]:
+        #     def stat(choro):
+        #         return fn(choro.values())
+        #     prop = ComputedProp() \
+        #         .add_input(self.choro_data, name="choro") \
+        #         .set_output(stat)
+        #     setattr(self, f"choro_data_{fn.__name__}", prop)
+
+        self.choro_data_max = ComputedProp() \
+            .add_input(self.choro_data, name="choro") \
+            .set_output(lambda choro: max(choro.values()))
+
+        self.choro_data_min = ComputedProp() \
+            .add_input(self.choro_data, name="choro") \
+            .set_output(lambda choro: min(choro.values()))
+
+        self.choro_data_stdev = ComputedProp() \
+            .add_input(self.choro_data, name="choro") \
+            .set_output(lambda choro: stdev(choro.values()))
+
+        self.choro_data_quantiles = ComputedProp() \
+            .add_input(self.choro_data, name="choro") \
+            .set_output(lambda choro: quantiles(choro.values()))
+
 
         logger.info('Data load completed')
 

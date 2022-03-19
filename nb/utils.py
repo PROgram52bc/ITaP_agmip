@@ -4,6 +4,24 @@ import ipywidgets as widgets
 import branca.colormap as cm
 from statistics import quantiles
 
+# DownloadButton
+import base64
+import hashlib
+from typing import Callable
+
+def is_float(n):
+    """check if number is float
+
+    :n: TODO
+    :returns: TODO
+
+    """
+    try:
+        float(n)
+        return True
+    except (ValueError, TypeError):
+        return False
+
 def get_dir_content(dirpath):
     """ Get all files from a given directory.
 
@@ -47,9 +65,6 @@ class DownloadButton(widgets.Button):
 
     The content is generated using a callback when the button is clicked.
     """
-    import base64
-    import hashlib
-    from typing import Callable
 
     def __init__(self, filename: str, contents: Callable[[], str], **kwargs):
         super(DownloadButton, self).__init__(**kwargs)
