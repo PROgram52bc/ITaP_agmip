@@ -155,7 +155,7 @@ class Const:
         'pr': 'production',
         'yi': 'harea.w.yield',
         'st': 'mean',
-        'wa': 'TODO',
+        'wa': 'w.ave.yield',
     }
 
     # Setting tab
