@@ -98,6 +98,7 @@ class Controller():
             logger.error("Trying to aggregate without an input file selected")
             return
         aggregation_option = view.aggregation_options.value
+        weightmap_file = os.path.join(Const.WEIGHT_MAP_DIR, view.weight_map_dropdown.value)
         start_year = model.start_year.value
         end_year = model.end_year.value
         if start_year is None:
@@ -112,6 +113,9 @@ class Controller():
         if yield_var is None:
             logger.error("Trying to aggregate with yield_var of None")
             return
+        logger.info(f"yield_var: {yield_var}")
+        crop_name = Const.FULL_CROP_NAME.get(yield_var.lstrip("yield_"), "others")
+        logger.info(f"crop_name: {crop_name}")
 
         cmd = [
             "Rscript",
@@ -120,14 +124,14 @@ class Controller():
             input_file,
             "examples/regionmap/WorldId.csv",
             aggregation_option,
-            "null",
+            weightmap_file,
             str(start_year),
             str(end_year),
             yield_var,
             "out.csv",
             "lon",
             "lat",
-            "soybean", # TODO: let user select weightmap, change the Rscript interface.
+            crop_name,
             "examples/weightmap/"
         ]
         result = subprocess.run(cmd, capture_output=True)
@@ -157,12 +161,12 @@ class Controller():
             for row in csv.DictReader(f):
                 year = int(row['time'])
                 country = row['id']
+                # TODO: handle NA values <2022-03-19, David Deng> #
                 try:
                     value = float(row[primary_variable])
                 except ValueError as e:
-                    logger.error(e)
+                    # logger.error(e)
                     value = 0
-                    pass
                 prod_data.setdefault(year, countries.copy())
                 if country in prod_data[year]:
                     prod_data[year][country] = value

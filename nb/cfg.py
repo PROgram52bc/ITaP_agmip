@@ -113,6 +113,21 @@ class Const:
     YEAR_REGEX_START = "start"
     YEAR_REGEX_END = "end"
 
+    FULL_CROP_NAME = {
+        "mai": "maize",
+        "soy": "soybean",
+        "whe": "wheat",
+        "ric": "rice",
+        "mgr": "managed_grass",
+        "rap": "rapeseed",
+        "bar": "barley",
+        "mil": "millet",
+        "sor": "sorghum",
+        "sug": "sugarcane",
+        "sgb": "sugarbeet",
+        "tea": "tea",
+    }
+
     # Selection tab
     CRITERIA_TITLE = 'Selection Criteria'
     CRITERIA_APPLY = 'Filter'
