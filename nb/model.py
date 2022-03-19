@@ -8,6 +8,7 @@ import pandas as pd
 from lib import SyncedProp, ComputedProp
 from nb.utils import get_dir_content
 import re
+import json
 
 class Model:
 
@@ -33,6 +34,9 @@ class Model:
         # Load data into memory from file
         self.data = pd.read_csv(os.path.join(Const.DATA_DIR, Const.DATA_FILE), escapechar='#')
         self.headers = list(self.data.columns.values)
+
+        with open('data/countries.geo.json', 'r') as f:
+            self.geodata = json.load(f)
 
         self.radio_selections = { category['label']: SyncedProp(value=None) for category in Const.DATA_CATEGORIES }
 

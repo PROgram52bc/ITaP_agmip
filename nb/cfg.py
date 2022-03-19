@@ -24,7 +24,7 @@ class Const:
     FLOAT_FORMAT = '0,.4f'
 
     # General
-    APP_TITLE = 'Land-Ocean Temperature Index'
+    APP_TITLE = 'Agmip Data Tool'
     CSS_JS_HTML = 'nb/custom.html'
     LOGO_IMAGE = 'nb/logo.png'
     ALL = 'All'
@@ -35,8 +35,7 @@ class Const:
         'Welcome',
         'Data Selection',
         'Data Aggregation',
-        'Data Visualization',
-        'Settings']
+        'Data Visualization']
     PLOT_TITLE = 'Land-Ocean Temperature Index'
 
     # Welcome tab
