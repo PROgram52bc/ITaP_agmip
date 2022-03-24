@@ -30,6 +30,7 @@ class SyncedProp(HasTraits):
 
     def __init__(self, *args, value=None):
         """ args is a list of 2-tuples (widget, prop) or widget """
+        # TODO: use a list to store the props and use index to identify each prop? <2022-03-24, David Deng> #
         self._output_props = set() # a set of (widget, prop), only update their values
         self._input_props = set() # a set of (widget, prop), only listen to their updates
         self.value = value
@@ -73,8 +74,8 @@ class SyncedProp(HasTraits):
     #     """ resync the value attribute """
     #     value = None
     #     for (widget, prop) in self._input_props:
-    #         # TODO: complete this function <2022-03-04, David Deng> #
-    #         # assert all inputs have the same value
+    #         # TODO: define the semantics of this function <2022-03-04, David Deng> #
+    #         # assert all inputs have the same value?
     #         # future: name each input element, and sync based on a specific input, if they are not all equal
     #         # can use itertools.groupby https://stackoverflow.com/questions/3844801/check-if-all-elements-in-a-list-are-identical
     #         # <2022-03-04, David Deng> #
@@ -139,7 +140,7 @@ class ComputedProp(HasTraits):
     def get_named_inputs(self):
         return { name: self._cache_values[tup] for name, tup in self._inputs.items() if tup in self._cache_values }
 
-    def __init__(self, *inputs, f=None):
+    def __init__(self, *inputs, f=None, use_none=False):
         """ initializer.
 
         :inputs: input triples.
@@ -154,6 +155,8 @@ class ComputedProp(HasTraits):
         self._inputs = {} # { name: (widget, prop), ... }
         self._cache_values = {} # { (widget, prop): value, ... }
 
+        self.use_none = use_none
+
         # if not inputs:
         #     raise ValueError("ComputedProp must be initialized with at least one input tuple or triple.")
 
@@ -167,7 +170,7 @@ class ComputedProp(HasTraits):
 
     def update_value(self):
         """ update the value based on the cache """
-        if None in self._cache_values.values():
+        if not self.use_none and None in self._cache_values.values():
             # TODO: add debug flag <2022-03-01, David Deng> #
             # print(f"None value detected in inputs of computed prop: {self.get_named_inputs()}")
             newvalue = None
@@ -202,8 +205,9 @@ class ComputedProp(HasTraits):
         :widget: the widget whose property is to be taken as an input
         :prop: the property name on the widget
         :name: the name of the input to be referred to in set_output's function,
-                if None, it will not be passed to the output function
-        :returns: None
+                if None, it will not be passed to the output function,
+                but still used to trigger value update when its value changes.
+        :returns: self
 
         """
         # only record the value in cache if the input is named
