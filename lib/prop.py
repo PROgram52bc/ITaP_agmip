@@ -14,11 +14,30 @@ def is_dict_unpackable(obj):
         return False
     return True
 
+def extract_operand(rhs):
+    if (isinstance(rhs, tuple) and
+            len(rhs) == 2 and
+            isinstance(rhs[0], HasTraits) and
+            isinstance(rhs[1], dict)):
+        return rhs
+    elif isinstance(rhs, HasTraits):
+        return rhs, dict()
+    else:
+        raise ValueError(f"Invalid operand: {rhs}. Operand must be either a prop, or a (prop, dict)")
+
+
 class Prop(HasTraits):
     """ Simple Prop with a 'value' attribute. """
     value = Any()
     def __init__(self, value=None):
         self.value = value
+
+# TODO: overload the <<= and >>= operator for add_input and set_output
+# overload @= operator for sync_prop.
+# Examples: p1 <<= p2, dict(value="value", sync=True) <<= p3
+# p1 @= p4
+# See https://docs.python.org/3/reference/datamodel.html#object.__ilshift__ 
+# https://stackoverflow.com/questions/6392739/what-does-the-at-symbol-do-in-python/28997112#28997112 <2022-03-24, David Deng> #
 
 class SyncedProp(HasTraits):
     """ Single synced prop to multiple widgets
@@ -122,6 +141,19 @@ class SyncedProp(HasTraits):
         self.add_output_prop(widget, prop, sync=sync_output)
         return self
 
+    def __lshift__(self, other):
+        prop, options = extract_operand(other)
+        return self.add_input_prop(prop, **options)
+
+    def __rshift__(self, other):
+        prop, options = extract_operand(other)
+        return self.add_output_prop(prop, **options)
+
+    def __matmul__(self, other):
+        prop, options = extract_operand(other)
+        return self.sync_prop(prop, **options)
+
+
 class ComputedProp(HasTraits):
     """ a read-only prop, whose 'value' is computed based on a function and a set of input widgets.
     c1 = ComputedProp(widget, ..., f=output_function) # prop default to 'value'
@@ -133,6 +165,9 @@ class ComputedProp(HasTraits):
     # TODO: The None propagation can be inconvenient when we want to cast to a boolean <2022-03-19, David Deng> #
 
     value = Any(read_only=True)
+
+    def __repr__(self):
+        return str(self)
 
     def __str__(self):
         return f"ComputedProp(value={self.value}, inputs={self.get_named_inputs()})"

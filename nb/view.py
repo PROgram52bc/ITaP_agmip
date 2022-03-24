@@ -6,7 +6,7 @@ from ipyleaflet import Map, Marker, Popup, WidgetControl, Choropleth
 from IPython.display import HTML, display, clear_output, FileLink
 import logging
 from branca.colormap import linear
-from nb.utils import get_dir_content, displayable, DownloadButton, get_colormap, is_float
+from nb.utils import get_dir_content, displayable, DownloadButton, get_colormap, is_float, get_file_content
 
 
 class View:
@@ -117,20 +117,21 @@ class View:
         radio_layout[:, 3] = self.radios[6]
 
         # download button
-        # self.raw_download_btn = DownloadButton(filename=model.selected_file.value, contents=lambda: 'hello', description='Download')
+        self.raw_download_btn = DownloadButton(
+            filename="unnamed",
+            contents=lambda: get_file_content(model.selected_file.value),
+            description='Download')
 
         # dropdown
-        self.folder_file_dropdown = widgets.Dropdown(options=[],
-                                         description='Select file',
-                                         )
+        self.folder_file_dropdown = widgets.Dropdown(options=[], description='Select file')
 
         content = [
             radio_layout,
             displayable(model.data_file_path, "data file path"),
             displayable(model.selected_file, "selected file"),
             self.folder_file_dropdown,
-            # self.raw_download_btn
-                   ]
+            self.raw_download_btn,
+        ]
 
         return self.section(Const.PREVIEW_SECTION_TITLE, content)
 
@@ -142,7 +143,7 @@ class View:
         # TODO: 
         # store the generated file and enable download in the map page
         # Separate aggregate and render?
-        # self.aggregated_download_btn = DownloadButton(filename='aggregated.csv', contents=lambda: 'hello', description='Download')
+        self.aggregated_download_btn = DownloadButton(filename='aggregated.csv', contents=lambda: 'Empty', description='Download')
 
         # static dropdown
         weightmaps = get_dir_content(Const.WEIGHT_MAP_DIR)
@@ -167,7 +168,7 @@ class View:
                     self.aggregation_options,
                     self.weight_map_dropdown,
                     self.aggregate_btn,
-                    # self.aggregated_download_btn
+                    self.aggregated_download_btn,
                 ]))
 
         return widgets.VBox(content)

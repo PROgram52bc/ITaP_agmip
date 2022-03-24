@@ -129,13 +129,6 @@ class Const:
     }
 
     # Selection tab
-    CRITERIA_TITLE = 'Selection Criteria'
-    CRITERIA_APPLY = 'Filter'
-    OUTPUT_TITLE = 'Results'
-    OUTPUT_PRE = 'Limit to '
-    OUTPUT_POST = 'lines'
-    EXPORT_TITLE = 'Export'
-    EXPORT_BUTTON = 'Create Download Link'
     START_YEAR = 'From Year'
     END_YEAR = 'To Year'
     WEIGHT_MAP_DIR = 'examples/weightmap/'
@@ -147,10 +140,6 @@ class Const:
     ]
 
     # Visualize tab
-    NOTE_TITLE = 'Note'
-    NOTE_TEXT = 'The plot is based on results from the Selection tab.'
-    PLOT_TITLE = 'Plot'
-    PLOT_LABEL = 'Select data field'
     PRIMARY_VAR = {
         'pr': 'production',
         'yi': 'harea.w.yield',
@@ -159,27 +148,6 @@ class Const:
     }
 
     # Setting tab
-    PLOT_SETTINGS_SECTION_TITLE = 'Plot Settings'
-    THEME = 'Theme'
-    THEMES = [
-        'onedork',
-        'grade3',
-        'oceans16',
-        'chesterish',
-        'monokai',
-        'solarizedl',
-        'solarizedd']
-    CONTEXT = 'Context'
-    CONTEXTS = ['paper', 'notebook', 'talk', 'poster']
-    FONT_SCALE = 'Font Scale'
-    SPINES = 'Spines'
-    GRIDLINES = 'Gridlines'
-    TICKS = 'Ticks'
-    GRID = 'Grid'
-    FIG_WIDTH = 'Width'
-    FIG_HEIGHT = 'Height'
-    APPLY = 'Apply'
-
 
 class AppendFileLineToLog(logging.Filter):
     """Custom logging format"""

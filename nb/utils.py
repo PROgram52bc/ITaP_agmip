@@ -4,7 +4,7 @@ import ipywidgets as widgets
 import branca.colormap as cm
 from statistics import quantiles
 
-# DownloadButton
+# For DownloadButton
 import base64
 import hashlib
 from typing import Callable
@@ -31,6 +31,10 @@ def get_dir_content(dirpath):
 
     """
     return [f for f in listdir(dirpath) if isfile(join(dirpath, f))] if isdir(dirpath) else []
+
+def get_file_content(filepath):
+    with open(filepath, "rb") as f:
+        return f.read()
 
 def displayable(prop, label=None):
     def f(prop):
@@ -67,14 +71,14 @@ class DownloadButton(widgets.Button):
     The content is generated using a callback when the button is clicked.
     """
 
-    def __init__(self, filename: str, contents: Callable[[], str], **kwargs):
+    def __init__(self, filename: str, contents: Callable[[], bytes], **kwargs):
         super(DownloadButton, self).__init__(**kwargs)
         self.filename = filename
         self.contents = contents
         self.on_click(self.__on_click)
 
     def __on_click(self, b):
-        contents: bytes = self.contents().encode('utf-8')
+        contents: bytes = self.contents() # .encode('utf-8')
         b64 = base64.b64encode(contents)
         payload = b64.decode()
         digest = hashlib.md5(contents).hexdigest()  # bypass browser cache

@@ -39,7 +39,7 @@ class Controller():
             # model.dropdown_selections -> view.dropdown.options
             SyncedProp() \
                 .add_input_prop(model.dropdown_selections, sync=True) \
-                .add_output_prop(view.folder_file_dropdown, 'options', sync=True)
+                .add_output_prop(view.folder_file_dropdown, prop='options', sync=True)
 
             # view.dropdown.value, model.data_file_path -> model.selected_file
             model.selected_file \
@@ -49,17 +49,22 @@ class Controller():
 
             # view.zoom_slider.value + model.prod_data.value -> model.choro_data.value
             model.choro_data \
-                .add_input(view.zoom_slider, 'value', 'selected_year') \
-                .add_input(model.prod_data, 'value', 'prod_data') \
+                .add_input(view.zoom_slider, prop='value', name='selected_year') \
+                .add_input(model.prod_data, prop='value', name='prod_data') \
                 .set_output(lambda prod_data, selected_year: prod_data.get(selected_year, None))
 
             # add callback to map
             view.map.on_interaction(self.cb_set_coordinates)
 
             # TODO: Fix non-propagation <2022-03-19, David Deng> #
-            # SyncedProp() \
-            #     .add_input_prop(model.no_selected_file, sync=True) \
-            #     .add_output_prop(view.raw_download_btn, 'disabled', sync=True)
+
+            SyncedProp() \
+                .add_input_prop(model.no_selected_file, sync=True) \
+                .add_output_prop(view.raw_download_btn, prop='disabled', sync=True)
+
+            SyncedProp() \
+                << (view.folder_file_dropdown, dict(sync=True)) \
+                >> (view.raw_download_btn, dict(prop="filename"))
 
 
             # TODO: Fix Choropleth so that can automatically trigger update upon changing choro_data without creating new instance?
