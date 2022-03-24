@@ -1,0 +1,6 @@
+#!/bin/sh
+
+#
+# jupyter tool
+#
+/usr/bin/invoke_app "$@" -C "start_jupyter -T @tool notebook.ipynb" -u anaconda-6
