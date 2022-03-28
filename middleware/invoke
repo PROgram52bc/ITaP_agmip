@@ -3,4 +3,4 @@
 #
 # jupyter tool
 #
-/usr/bin/invoke_app "$@" -C "start_jupyter -T @tool notebook.ipynb" -u anaconda-6
+/usr/bin/invoke_app "$@" -t agmipagg -C "start_jupyter -T @tool notebook.ipynb" -u anaconda-7
