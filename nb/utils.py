@@ -13,8 +13,8 @@ from IPython.display import HTML
 def is_float(n):
     """check if number is float
 
-    :n: TODO
-    :returns: TODO
+    :n: The number to be checked
+    :returns: Boolean
 
     """
     try:

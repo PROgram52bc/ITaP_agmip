@@ -143,7 +143,7 @@ class View:
         # TODO: 
         # store the generated file and enable download in the map page
         # Separate aggregate and render?
-        self.aggregated_download_btn = DownloadButton(filename='aggregated.csv', contents=lambda: 'Empty', description='Download')
+        # self.aggregated_download_btn = DownloadButton(filename='aggregated.csv', contents=lambda: b'Empty', description='Download', layout={'width': 'auto'})
 
         # static dropdown
         weightmaps = get_dir_content(Const.WEIGHT_MAP_DIR)
@@ -168,7 +168,7 @@ class View:
                     self.aggregation_options,
                     self.weight_map_dropdown,
                     self.aggregate_btn,
-                    self.aggregated_download_btn,
+                    # self.aggregated_download_btn,
                 ]))
 
         return widgets.VBox(content)
@@ -197,7 +197,7 @@ class View:
         zscontrol = WidgetControl(widget=self.zoom_slider, position="bottomleft", transparent_bg=True)
         self.map.add_control(zscontrol)
 
-        # don't add popup because can't close it
+        # TODO: fix popup <2022-03-29, David Deng> #
         # self.popup = Popup(location=(0,0), close_button=True, auto_close=True, close_on_escape_key=True)
         # self.map.add_layer(self.popup)
 
@@ -216,15 +216,15 @@ class View:
 
     def render_mapinfo(self, **kwargs):
         for k,v in kwargs.items():
-            if k == "Quantiles":
+            if k == "Quantiles" and v is not None:
                 print(f"1st Quantile: {round(v[0], 2)}")
                 print(f"2st Quantile: {round(v[1], 2)}")
                 print(f"3st Quantile: {round(v[2], 2)}")
             else:
-                # if is_float(v):
-                #     print(f"{k}: {round(v, 2)}")
-                # else:
-                print(f"{k}: {v}")
+                if is_float(v):
+                    print(f"{k}: {round(v, 2)}")
+                else:
+                    print(f"{k}: {v}")
 
     def refresh_map_colormap(self):
         # replace the colormap legend control
@@ -244,6 +244,9 @@ class View:
             self.choro.choro_data = choro_data.copy()
 
     def reset_map_choro(self, choro_data):
+        # similar to refresh_map_choro, except will recreate a new Choropleth object
+        # used on initial rendering of the map.
+
         data = list(choro_data.values())
         self.colormap = get_colormap(data)
 

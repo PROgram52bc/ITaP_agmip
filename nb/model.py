@@ -47,7 +47,7 @@ class Model:
 
         # data_file_path -> dropdown_selections
         self.dropdown_selections = ComputedProp() \
-            .add_input(self.data_file_path, "value", "path") \
+            .add_input(self.data_file_path, name="path") \
             .set_output(f=lambda path: get_dir_content(path))
 
         # data/raw/.../...nc4
@@ -56,17 +56,17 @@ class Model:
         # TODO: use a transform property in SyncedProp <2022-03-19, David Deng> #
 
         self.no_selected_file = ComputedProp(use_none=True) \
-            .add_input(self.selected_file, 'value', 'f') \
+            .add_input(self.selected_file, name='f') \
             .set_output(lambda f: not f) \
             .resync()
 
         year_regex = re.compile(Const.YEAR_REGEX)
         self.start_year = ComputedProp() \
-            .add_input(self.selected_file, 'value', 'path') \
+            .add_input(self.selected_file, name='path') \
             .set_output(lambda path: int(year_regex.match(path).group(Const.YEAR_REGEX_START)))
 
         self.end_year = ComputedProp() \
-            .add_input(self.selected_file, 'value', 'path') \
+            .add_input(self.selected_file, name='path') \
             .set_output(lambda path: int(year_regex.match(path).group(Const.YEAR_REGEX_END)))
 
 
@@ -81,15 +81,6 @@ class Model:
             .add_input(self.selected_country, name="country") \
             .add_input(self.choro_data, name="data") \
             .set_output(lambda country, data: data.get(country, 0))
-
-        # TODO: how to statically bind fn?
-        # for fn in [max, min, stdev, quantiles]:
-        #     def stat(choro):
-        #         return fn(choro.values())
-        #     prop = ComputedProp() \
-        #         .add_input(self.choro_data, name="choro") \
-        #         .set_output(stat)
-        #     setattr(self, f"choro_data_{fn.__name__}", prop)
 
         self.choro_data_max = ComputedProp() \
             .add_input(self.choro_data, name="choro") \
@@ -107,7 +98,6 @@ class Model:
             .add_input(self.choro_data, name="choro") \
             .set_output(lambda choro: quantiles(choro.values()))
 
-
         logger.info('Data load completed')
 
 
@@ -118,42 +108,3 @@ class Model:
             return None
         else:
             return os.path.join("data/raw", *[p.value for p in self.radio_selections.values() if p.value is not None])
-
-    def set_disp(self, data=None, limit=None, wide=False):
-        """Prep Pandas to display specific number of data lines."""
-        if not limit:
-            limit = data.shape[0]
-
-        pd.set_option('display.max_rows', limit + 1)
-
-        if wide:
-            pd.set_option('display.float_format', lambda x: format(x, Const.FLOAT_FORMAT))
-
-    def clear_filter_results(self):
-        """Reset results-tracking attributes."""
-        self.results = None
-        self.res_count = 0
-
-    def filter_data(self, from_year, to_year):
-        '''Use provided values to filter data.'''
-        self.results = self.data[(self.data[self.headers[0]] >= int(from_year)) &
-                                 (self.data[self.headers[0]] <= int(to_year))]
-        self.res_count = self.results.shape[0]
-        logger.debug('Results: '+str(self.res_count))
-
-    def iterate_data(self):
-        """Get iterator for data."""
-        return self.data.itertuples()
-
-    def create_download_file(self, data, file_format_ext):
-        """Prep data for export."""
-
-        # First, to save space, delete existing download file(s)
-        for filename in glob.glob(Const.DOWNLOAD_DATA_NAME + '.*'):
-            os.remove(filename)
-
-        # Create new download file TODO Other download formats
-        filename = Const.DOWNLOAD_DATA_NAME + '.' + file_format_ext
-        data.to_csv(filename, index=False, quoting=csv.QUOTE_NONNUMERIC)
-
-        return filename

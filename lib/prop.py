@@ -1,5 +1,12 @@
 from traitlets import HasTraits, Any, observe
 
+DEBUG=0
+
+def D(msg):
+    if DEBUG:
+        print(msg)
+
+
 def is_list_unpackable(obj):
     try:
         (lambda *a: None)(*obj)
@@ -32,10 +39,10 @@ class Prop(HasTraits):
     def __init__(self, value=None):
         self.value = value
 
-# TODO: overload the <<= and >>= operator for add_input and set_output
-# overload @= operator for sync_prop.
-# Examples: p1 <<= p2, dict(value="value", sync=True) <<= p3
-# p1 @= p4
+# TODO: overload the << and >> operator for add_input and set_output
+# overload @ operator for sync_prop.
+# Examples: p1 << (p2, dict(value="value", sync=True)) << p3
+# p1 @ p4
 # See https://docs.python.org/3/reference/datamodel.html#object.__ilshift__ 
 # https://stackoverflow.com/questions/6392739/what-does-the-at-symbol-do-in-python/28997112#28997112 <2022-03-24, David Deng> #
 
@@ -153,6 +160,7 @@ class SyncedProp(HasTraits):
         prop, options = extract_operand(other)
         return self.sync_prop(prop, **options)
 
+# Thought: is it possible to combine SyncedProp and ComputedProp? <2022-03-29, David Deng> #
 
 class ComputedProp(HasTraits):
     """ a read-only prop, whose 'value' is computed based on a function and a set of input widgets.
@@ -162,8 +170,6 @@ class ComputedProp(HasTraits):
     f should not have side effects.
     if any of the named input has a value of None, the output will also be None.
     """
-    # TODO: The None propagation can be inconvenient when we want to cast to a boolean <2022-03-19, David Deng> #
-
     value = Any(read_only=True)
 
     def __repr__(self):
@@ -180,7 +186,7 @@ class ComputedProp(HasTraits):
 
         :inputs: input triples.
         :f: the output function
-        :returns: TODO
+        :returns: None
 
         """
         if f is None:
@@ -199,21 +205,19 @@ class ComputedProp(HasTraits):
 
     def update_cache(self):
         """ update the cache value by querying each of the inputs """
-        # TODO: currently remove is not supported. Invalidate the cache when input is removed <2022-02-04, David Deng> #
+        # NOTE: currently remove is not supported. Invalidate the cache when input is removed <2022-02-04, David Deng> #
         for name, (widget, prop) in self._inputs.items():
             self._cache_values[(widget, prop)] = getattr(widget, prop)
 
     def update_value(self):
         """ update the value based on the cache """
         if not self.use_none and None in self._cache_values.values():
-            # TODO: add debug flag <2022-03-01, David Deng> #
-            # print(f"None value detected in inputs of computed prop: {self.get_named_inputs()}")
+            D(f"None value detected in inputs of computed prop: {self.get_named_inputs()}")
             newvalue = None
         else:
             newvalue = self._f(**{ k:self._cache_values[tup] for k, tup in self._inputs.items() })
         self.set_trait('value', newvalue)
 
-    # TODO: rename to sync, add to SyncedProp as well <2022-03-01, David Deng> #
     def resync(self):
         """ resync the value attribute """
         self.update_cache()
@@ -251,8 +255,7 @@ class ComputedProp(HasTraits):
             # avoid triggering widget getter multiple times
             h = (widget, prop)
             self._cache_values[h] = getattr(widget, prop)
-        # TODO: turn this into debug flag <2022-03-01, David Deng> #
-        # print(f"registering listener on {widget}, {prop}")
+        D(f"registering listener on {widget}, {prop}")
         widget.observe(self._update_self, prop)
         # sync
         if sync:

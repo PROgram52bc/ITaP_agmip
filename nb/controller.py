@@ -49,14 +49,12 @@ class Controller():
 
             # view.zoom_slider.value + model.prod_data.value -> model.choro_data.value
             model.choro_data \
-                .add_input(view.zoom_slider, prop='value', name='selected_year') \
-                .add_input(model.prod_data, prop='value', name='prod_data') \
+                .add_input(view.zoom_slider, name='selected_year') \
+                .add_input(model.prod_data, name='prod_data') \
                 .set_output(lambda prod_data, selected_year: prod_data.get(selected_year, None))
 
             # add callback to map
             view.map.on_interaction(self.cb_set_coordinates)
-
-            # TODO: Fix non-propagation <2022-03-19, David Deng> #
 
             SyncedProp() \
                 .add_input_prop(model.no_selected_file, sync=True) \
@@ -197,11 +195,12 @@ class Controller():
         send_notification("Successfully drawn map!")
 
     def refresh_map(self):
-        view.refresh_map_choro(model.choro_data.value)
+        if model.choro_data.value is not None:
+            view.refresh_map_choro(model.choro_data.value)
 
-        # # uncomment the following lines to show more visible update upon refreshing map
-        # import random
-        # view.refresh_map_choro({ k:v*random.uniform(0.5,1.5) for k,v in model.choro_data.value.items() })
+            # # uncomment the following lines to show more visible update upon refreshing map
+            # import random
+            # view.refresh_map_choro({ k:v*random.uniform(0.5,1.5) for k,v in model.choro_data.value.items() })
 
-        view.refresh_map_colormap()
-        logger.debug("Map refreshed.")
+            view.refresh_map_colormap()
+            logger.debug("Map refreshed.")
