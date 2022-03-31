@@ -40,9 +40,24 @@ class Const:
 
     # Welcome tab
     USING_TITLE = 'Using This App'
-    USING_TEXT = '''<p>
+    MANUAL_PATH = 'examples/user_manual.pdf'
+    USING_TEXT = f'''
+    <h1>AgMIP Tool</h1>
+    <h2>About This Tool</h2>
+    <p>
+    Crop Data Tool aggregates the yield shocks provided
+    by the AgMIP project from their original 30x30 min resolution to the country level.
+    <br>For detailed instructions, click this link.<br> <a href="{MANUAL_PATH}" download>
+    AgMIP Tool 1.2 User Manual</a>
+    </p>
+    <h2>Usage</h2>
+    <p>
     In the <b>Data</b> tab above, you can review the dataset.
+    </p>
+    <p>
     In the <b>Selection</b> tab, you can search for and download data of interest.
+    </p>
+    <p>
     Once you've selected data, generate plots in the <b>Visualize</b> tab.
     </p>'''
     SOURCES_TITLE = 'Data Sources'
@@ -177,7 +192,7 @@ class NotebookLoggingHandler(logging.Handler):
 
 # Singletons
 
-# TODO: reset the timer on new send_notification call 
+# TODO: reset the timer on new send_notification call
 # see https://stackoverflow.com/questions/9812344/cancellable-threading-timer-in-python
 # <2022-03-31, David Deng> #
 

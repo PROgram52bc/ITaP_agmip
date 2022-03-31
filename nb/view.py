@@ -36,7 +36,7 @@ class View:
         with open(Const.LOGO_IMAGE, "rb") as logo_file:
             logo = widgets.Image(
                 value=logo_file.read(), format='jpg', layout={
-                    'max_height': '32px'})
+                    'max_height': '64px'})
 
         self.notification = notification
 
@@ -138,16 +138,17 @@ class View:
     def aggregation_content(self):
         '''Create widgets for selection tab content'''
 
-        self.aggregate_btn = widgets.Button(description="Aggregate and Render Map", layout={'width': 'auto'})
+        self.aggregate_btn = widgets.Button(description="Aggregate and Render Map")
 
         # TODO: 
         # store the generated file and enable download in the map page
         # Separate aggregate and render?
-        # self.aggregated_download_btn = DownloadButton(filename='aggregated.csv', contents=lambda: b'Empty', description='Download', layout={'width': 'auto'})
+        # self.aggregated_download_btn = DownloadButton(filename='aggregated.csv', contents=lambda: b'Empty', description='Download')
 
         # static dropdown
         weightmaps = get_dir_content(Const.WEIGHT_MAP_DIR)
 
+        # TODO: move the layout attributes to custom.html <2022-03-31, David Deng> #
         self.aggregation_options = widgets.RadioButtons(description="Aggregation Options",
             style={'description_width': 'auto'},
             layout={'overflow': 'hidden', 'height': 'auto', 'width': 'auto'},
