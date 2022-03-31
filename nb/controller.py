@@ -115,6 +115,7 @@ class Controller():
             logger.error("Trying to aggregate with end year of None")
             return
 
+        # TODO: refactor this to a method, to be used in citation <2022-03-31, David Deng> #
         with netCDF4.Dataset(input_file) as f:
             yield_var = get_yield_variable(f)
         if yield_var is None:

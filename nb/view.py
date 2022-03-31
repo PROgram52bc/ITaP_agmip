@@ -6,7 +6,7 @@ from ipyleaflet import Map, Marker, Popup, WidgetControl, Choropleth
 from IPython.display import HTML, display, clear_output, FileLink
 import logging
 from branca.colormap import linear
-from nb.utils import get_dir_content, displayable, DownloadButton, get_colormap, is_float, get_file_content
+from nb.utils import get_dir_content, displayable, DownloadButton, get_colormap, is_float, get_file_content, display_with_style
 
 
 class View:
@@ -91,6 +91,15 @@ class View:
         ret.set_title(0, title)
         return ret
 
+    def button_group(self, *buttons):
+        """Create a horizontal list of buttons
+
+        :*buttons: the list of buttons
+        :returns: TODO
+
+        """
+        pass
+
     def welcome_content(self):
         '''Create widgets for introductory tab content'''
         content = []
@@ -127,8 +136,8 @@ class View:
 
         content = [
             radio_layout,
-            displayable(model.data_file_path, "data file path"),
-            displayable(model.selected_file, "selected file"),
+            # displayable(model.data_file_path, "data file path"),
+            # displayable(model.selected_file, "selected file"),
             self.folder_file_dropdown,
             self.raw_download_btn,
         ]
@@ -218,14 +227,14 @@ class View:
     def render_mapinfo(self, **kwargs):
         for k,v in kwargs.items():
             if k == "Quantiles" and v is not None:
-                print(f"1st Quantile: {round(v[0], 2)}")
-                print(f"2st Quantile: {round(v[1], 2)}")
-                print(f"3st Quantile: {round(v[2], 2)}")
+                display_with_style(round(v[0], 2), "1st Quantile")
+                display_with_style(round(v[1], 2), "2nd Quantile")
+                display_with_style(round(v[2], 2), "3rd Quantile")
             else:
                 if is_float(v):
-                    print(f"{k}: {round(v, 2)}")
+                    display_with_style(round(v, 2), k)
                 else:
-                    print(f"{k}: {v}")
+                    display_with_style(v, k)
 
     def refresh_map_colormap(self):
         # replace the colormap legend control

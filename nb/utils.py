@@ -36,12 +36,18 @@ def get_file_content(filepath):
     with open(filepath, "rb") as f:
         return f.read()
 
+def display_with_style(prop, label=None):
+    """Display prop and label with styles
+    """
+    # TODO: add classes for styles <2022-03-31, David Deng> #
+    if label:
+        display(HTML(f"<p><b>{label}</b>: {prop}</p>"))
+    else:
+        display(HTML(f"<p>{prop}</p>"))
+
 def displayable(prop, label=None):
     def f(prop):
-        if label:
-            print(f"{label}: {prop}")
-        else:
-            print(prop)
+        display_with_style(prop, label)
     return widgets.interactive_output(f, {"prop": prop})
 
 def get_yield_variable(f):

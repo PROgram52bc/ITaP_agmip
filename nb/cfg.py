@@ -42,7 +42,6 @@ class Const:
     USING_TITLE = 'Using This App'
     MANUAL_PATH = 'examples/user_manual.pdf'
     USING_TEXT = f'''
-    <h1>AgMIP Tool</h1>
     <h2>About This Tool</h2>
     <p>
     Crop Data Tool aggregates the yield shocks provided
@@ -52,13 +51,13 @@ class Const:
     </p>
     <h2>Usage</h2>
     <p>
-    In the <b>Data</b> tab above, you can review the dataset.
+    In the <b>Data Selection</b> tab above, you can select the dataset.
     </p>
     <p>
-    In the <b>Selection</b> tab, you can search for and download data of interest.
+    In the <b>Data Aggregation</b> tab, you can select the aggregation option and aggregate the data.
     </p>
     <p>
-    Once you've selected data, generate plots in the <b>Visualize</b> tab.
+    Once you've aggregated the data, generate plots in the <b>Data Visualization</b> tab.
     </p>'''
     SOURCES_TITLE = 'Data Sources'
     SOURCES_TEXT = '''<p>
@@ -148,10 +147,10 @@ class Const:
     END_YEAR = 'To Year'
     WEIGHT_MAP_DIR = 'examples/weightmap/'
     AGGREGATION_OPTIONS = [
-        ('Regional Production', 'pr'),
-        ('Regional Yields', 'yi'),
-        ('Summary Statistics', 'st'),
-        ('Regional Weighted-Average Yields', 'wa')
+        ("Regional Production (in metric tons)", 'pr'),
+        ("Regional Yields (metric tons / hectare) Weighted by each Gridcells Havested Area", 'yi'),
+        ("Summary Statistics (mean, median, SD, min, max, and 25%-75% percentiles)", 'st'),
+        ("Regional Weighted-Average Yields (metric tons / hectare)", 'wa')
     ]
 
     # Visualize tab
