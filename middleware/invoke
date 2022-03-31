@@ -3,4 +3,8 @@
 #
 # jupyter tool
 #
-/usr/bin/invoke_app "$@" -t agmipagg -C "start_jupyter -T @tool notebook.ipynb" -u anaconda-7
+/usr/bin/invoke_app "$@" -t agmipagg \
+                                                         -C "start_jupyter -T @tool notebook.ipynb" \
+                                                         -u anaconda-7 \
+                                                         -w headless \
+                                                         -r none
