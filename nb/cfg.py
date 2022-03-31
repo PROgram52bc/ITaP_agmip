@@ -176,6 +176,11 @@ class NotebookLoggingHandler(logging.Handler):
 
 
 # Singletons
+
+# TODO: reset the timer on new send_notification call 
+# see https://stackoverflow.com/questions/9812344/cancellable-threading-timer-in-python
+# <2022-03-31, David Deng> #
+
 notification = widgets.Output(layout={'display': 'none',
                                       'border': '1px solid black',
                                       'padding': '2px 0px 2px 0px'
