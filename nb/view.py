@@ -35,7 +35,7 @@ class View:
         # Create app logo - example of using exposed layout properties
         with open(Const.LOGO_IMAGE, "rb") as logo_file:
             logo = widgets.Image(
-                value=logo_file.read(), format='png', layout={
+                value=logo_file.read(), format='jpg', layout={
                     'max_height': '32px'})
 
         self.notification = notification

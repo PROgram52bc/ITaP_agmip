@@ -26,7 +26,7 @@ class Const:
     # General
     APP_TITLE = 'Agmip Data Tool'
     CSS_JS_HTML = 'nb/custom.html'
-    LOGO_IMAGE = 'nb/logo.png'
+    LOGO_IMAGE = 'examples/agmip2.jpg'
     ALL = 'All'
     EMPTY = ''
     NO_DATA_MSG = '''<br>(There's no data to display.)'''
