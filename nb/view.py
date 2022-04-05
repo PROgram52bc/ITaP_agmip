@@ -70,6 +70,29 @@ class View:
         display(widgets.VBox([header, self.notification, tabs, log]))
         logger.info('UI build completed')
 
+    def get_navigation_button(self, action="next", description=None):
+        """get a navigation button for the tab
+
+        :action: TODO
+        :description: TODO
+        :returns: TODO
+
+        """
+        if description is None:
+            description = action
+
+        btn = widgets.Button()
+        if action == "next":
+            btn.description = f"{description} ►"
+            btn.on_click(lambda _: self.switch_to_tab(self.tabs.selected_index + 1))
+        elif action == "prev":
+            btn.description = f"◄ {description}"
+            btn.on_click(lambda _: self.switch_to_tab(self.tabs.selected_index - 1))
+        else:
+            raise ValueError(f"Invalid action: {action}")
+
+        return btn
+
     def switch_to_tab(self, idx):
         """switch to a given tab programmatically
         :index: the index of the tab
@@ -98,13 +121,16 @@ class View:
         :returns: TODO
 
         """
-        pass
+        btns = widgets.HBox(children=buttons)
+        btns.add_class("button_group")
+        return btns
 
     def welcome_content(self):
         '''Create widgets for introductory tab content'''
-        content = []
-        content.append(self.section(Const.USING_TITLE, Const.USING_TEXT))
-        return widgets.VBox(content)
+        return self.section(Const.USING_TITLE, [
+            widgets.HTML(Const.USING_TEXT),
+            self.get_navigation_button("next", "Get Started")
+        ])
 
     def data_content(self):
         '''Show data tab content'''
@@ -139,7 +165,11 @@ class View:
             # displayable(model.data_file_path, "data file path"),
             # displayable(model.selected_file, "selected file"),
             self.folder_file_dropdown,
-            self.raw_download_btn,
+            self.button_group(
+                self.get_navigation_button("prev", "Previous"),
+                self.raw_download_btn,
+                self.get_navigation_button("next", "Next"),
+            )
         ]
 
         return self.section(Const.PREVIEW_SECTION_TITLE, content)

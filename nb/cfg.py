@@ -24,7 +24,7 @@ class Const:
     FLOAT_FORMAT = '0,.4f'
 
     # General
-    APP_TITLE = 'Agmip Data Tool'
+    APP_TITLE = "AgMIP Tool: A GEOSHARE tool for aggregating outputs from the AgMIP's Global Grid (Phase 3)"
     CSS_JS_HTML = 'nb/custom.html'
     LOGO_IMAGE = 'examples/agmip2.jpg'
     ALL = 'All'
