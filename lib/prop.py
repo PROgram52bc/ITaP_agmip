@@ -279,3 +279,11 @@ class ComputedProp(HasTraits):
         """ f takes an expanded **kwargs, """
         self._f = f
         return self
+
+    def __lshift__(self, other):
+        prop, options = extract_operand(other)
+        return self.add_input(prop, **options)
+
+    def __rshift__(self, other):
+        # TODO: verify other is a function <2022-04-07, David Deng> #
+        return self.set_output(other)

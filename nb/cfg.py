@@ -161,8 +161,6 @@ class Const:
         'wa': 'w.ave.yield',
     }
 
-    # Setting tab
-
 class AppendFileLineToLog(logging.Filter):
     """Custom logging format"""
     def filter(_, record):

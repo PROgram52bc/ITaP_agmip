@@ -43,15 +43,15 @@ class Controller():
 
             # view.dropdown.value, model.data_file_path -> model.selected_file
             model.selected_file \
-                .add_input(model.data_file_path, name="path") \
-                .add_input(view.folder_file_dropdown, name="file") \
-                .set_output(lambda path, file: os.path.join(path, file))
+                << (model.data_file_path, dict(name="path")) \
+                << (view.folder_file_dropdown, dict(name="file")) \
+                >> (lambda path, file: os.path.join(path, file))
 
             # view.zoom_slider.value + model.prod_data.value -> model.choro_data.value
             model.choro_data \
-                .add_input(view.zoom_slider, name='selected_year') \
-                .add_input(model.prod_data, name='prod_data') \
-                .set_output(lambda prod_data, selected_year: prod_data.get(selected_year, None))
+                << (view.zoom_slider, dict(name='selected_year')) \
+                << (model.prod_data, dict(name='prod_data')) \
+                >> (lambda prod_data, selected_year: prod_data.get(selected_year, None))
 
             # add callback to map
             view.map.on_interaction(self.cb_set_coordinates)
