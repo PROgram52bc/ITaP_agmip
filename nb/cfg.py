@@ -12,34 +12,17 @@ from nb.controller import Controller
 class Const:
     """Store app-wide constants, including values and language text."""
 
-    # NOTE This class is a simple catch-all. For better features, consider using the following:
-    # - Multilingual internationalization: https://docs.python.org/2/library/gettext.html
-    # - Data classes: https://docs.python.org/3/library/dataclasses.html
-    # - Bound attributes: https://www.oreilly.com/library/view/python-cookbook/0596001673/ch05s16.html
-
-    # Data
-    DATA_DIR = 'data'
-    DATA_FILE = 'loti.csv'
-    DOWNLOAD_DATA_NAME = 'loti-download'
-    FLOAT_FORMAT = '0,.4f'
-
     # General
     APP_TITLE = "AgMIP Tool: A GEOSHARE tool for aggregating outputs from the AgMIP's Global Grid (Phase 3)"
     CSS_JS_HTML = 'nb/custom.html'
     LOGO_IMAGE = 'examples/agmip2.jpg'
-    ALL = 'All'
-    EMPTY = ''
-    NO_DATA_MSG = '''<br>(There's no data to display.)'''
-    EXPORT_LINK_PROMPT = "Click here to save file: "
     TAB_TITLES = [
         'Welcome',
         'Data Selection',
         'Data Aggregation',
         'Data Visualization']
-    PLOT_TITLE = 'Land-Ocean Temperature Index'
 
     # Welcome tab
-    USING_TITLE = 'Using This App'
     MANUAL_PATH = 'examples/user_manual.pdf'
     USING_TEXT = f'''
     <h2>About This Tool</h2>
@@ -59,22 +42,7 @@ class Const:
     <p>
     Once you've aggregated the data, generate plots in the <b>Data Visualization</b> tab.
     </p>'''
-    SOURCES_TITLE = 'Data Sources'
-    SOURCES_TEXT = '''<p>
-    <b>Land-Ocean Temperature Index</b>
-    <a href="https://climate.nasa.gov/vital-signs/global-temperature/"
-    target="_blank">Global Temperature (NASA)</a>
-    ,
-    <a href="https://data.giss.nasa.gov/gistemp/"
-    target="_blank">GISS Surface Temperature Analysis (NASA)</a>
-    </p><p>
-    This site is based on data downloaded from the following site on 2020-07-14:
-    <a href="https://data.giss.nasa.gov/gistemp/graphs/graph_data/Global_Mean_Estimates_based_on_Land_and_Ocean_Data/graph.txt"  # noqa
-    target="_blank">Global Mean Estimates based on Land_and Ocean Data (NASA)</a>
-    </p>'''
 
-    # Data tab
-    PREVIEW_SECTION_TITLE = 'Data'
     DATA_CATEGORIES = [
         {"label": "Crop Model", "options": [
             "EPIC",
@@ -123,9 +91,6 @@ class Const:
             "tea",
             "wheat", ]}
     ]
-    YEAR_REGEX = r".*(?P<start>[0-9]{4})_(?P<end>[0-9]{4})\.nc4"
-    YEAR_REGEX_START = "start"
-    YEAR_REGEX_END = "end"
 
     FULL_CROP_NAME = {
         "mai": "maize",
@@ -143,8 +108,8 @@ class Const:
     }
 
     # Selection tab
-    START_YEAR = 'From Year'
-    END_YEAR = 'To Year'
+    COMBINED_CACHE_DIR = 'cache/combined/'
+    AGGREGATED_CACHE_DIR = 'cache/aggregated/'
     WEIGHT_MAP_DIR = 'examples/weightmap/'
     AGGREGATION_OPTIONS = [
         ("Regional Production (in metric tons)", 'pr'),
@@ -153,7 +118,6 @@ class Const:
         ("Regional Weighted-Average Yields (metric tons / hectare)", 'wa')
     ]
 
-    # Visualize tab
     PRIMARY_VAR = {
         'pr': 'production',
         'yi': 'harea.w.yield',

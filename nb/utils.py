@@ -1,8 +1,9 @@
 from os import listdir
-from os.path import isfile, isdir, join
+from os.path import isfile, isdir, join, basename, splitext
 import ipywidgets as widgets
 import branca.colormap as cm
 from statistics import quantiles
+import re
 
 # For DownloadButton
 import base64
@@ -69,6 +70,60 @@ def get_colormap(data=None):
     data_nozero = [ d for d in data if d > 0 ]
     qt = quantiles(data_nozero)
     return cm.LinearColormap(colors=colors, index=[mn, *qt, mx], vmin=round(mn, 2), vmax=round(mx, 2))
+
+year_regex = re.compile(r"(?P<base>.*)_(?P<start>[0-9]{4})_(?P<end>[0-9]{4})\.(?P<ext>\w{1,3})")
+def get_start_year(path):
+    return int(year_regex.match(path).group("start"))
+def get_end_year(path):
+    return int(year_regex.match(path).group("end"))
+def get_base_from_year_path(path):
+    return year_regex.match(path).group("base")
+def get_ext_from_year_path(path):
+    return year_regex.match(path).group("ext")
+
+def is_contiguous(ranges):
+    """check whether the year ranges are contiguous
+
+    :ranges: sequence of tuples, containing integers
+    :returns: Boolean, indicating whether the values are contiguous
+
+    Each start number must be 1 greater than the end number of the previous tuple
+    e.g.    (1981, 1990), (1991, 2000) => True
+            (1971, 1980), (1991, 2000) => False
+            (1971, 1980), (1980, 2000) => False
+
+    """
+    for prev, nxt in zip(ranges[:-1], ranges[1:]):
+        if prev[1] + 1 != nxt[0]:
+            return False
+    return True
+
+def get_combine_cache_file(paths):
+    """compute the filename used to store the combined cache of the given files
+    example paths: [
+    'data/raw/IMAGE_LEITAP/GFDL-ESM2M/hist/ssp2/co2/firr/maize/image_gfdl-esm2m_hist_ssp2_co2_firr_yield_mai_annual_1971_1980.nc4',
+    'data/raw/IMAGE_LEITAP/GFDL-ESM2M/hist/ssp2/co2/firr/maize/image_gfdl-esm2m_hist_ssp2_co2_firr_yield_mai_annual_1981_1990.nc4',
+    ]
+
+    :files: a list of strings containing the file names
+    :returns: None if not combinable
+
+    """
+    assert paths and len(paths) > 0, "paths must not be empty"
+    ranges = sorted([ (get_start_year(p), get_end_year(p)) for p in paths ])
+    if not is_contiguous(ranges):
+        return None
+    combined_range = ranges[0][0], ranges[-1][1]
+    path = basename(paths[0])
+    base = get_base_from_year_path(path)
+    ext = get_ext_from_year_path(path)
+
+    combined_path = f"{base}_{combined_range[0]}_{combined_range[1]}.{ext}"
+    return combined_path
+
+def can_combine(paths):
+    return get_combine_cache_file(paths) is not None
+
 
 # https://stackoverflow.com/questions/61708701/how-to-download-a-file-using-ipywidget-button
 class DownloadButton(widgets.Button):

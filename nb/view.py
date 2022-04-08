@@ -127,7 +127,7 @@ class View:
 
     def welcome_content(self):
         '''Create widgets for introductory tab content'''
-        return self.section(Const.USING_TITLE, [
+        return self.section('Using This App', [
             widgets.HTML(Const.USING_TEXT),
             self.get_navigation_button("next", "Get Started")
         ])
@@ -136,6 +136,7 @@ class View:
         '''Show data tab content'''
         self.radios = [widgets.RadioButtons(
             options=category['options'],
+            # TODO: move style to custom.html <2022-04-07, David Deng> #
             style={'description_width': 'auto'},
             layout={'overflow': 'hidden', 'height': 'auto', 'width': 'auto'},
             description=category['label']
@@ -154,17 +155,25 @@ class View:
         # download button
         self.raw_download_btn = DownloadButton(
             filename="unnamed",
-            contents=lambda: get_file_content(model.selected_file.value),
+            # FIXME: retrieve content from the combined file <2022-04-08, David Deng> #
+            contents=lambda: get_file_content(model.selected_files.value),
             description='Download')
 
-        # dropdown
-        self.folder_file_dropdown = widgets.Dropdown(options=[], description='Select file')
+        # multiselect
+        self.folder_file_multi_select = widgets.SelectMultiple(options=[], description='Select file')
+        self.select_all = widgets.Checkbox(
+            value=False,
+            description='Select All Available Files',
+            disabled=False,
+            indent=False
+        )
 
         content = [
             radio_layout,
             # displayable(model.data_file_path, "data file path"),
-            # displayable(model.selected_file, "selected file"),
-            self.folder_file_dropdown,
+            # displayable(model.selected_files, "selected file"),
+            self.select_all,
+            self.folder_file_multi_select,
             self.button_group(
                 self.get_navigation_button("prev", "Previous"),
                 self.raw_download_btn,
@@ -172,14 +181,14 @@ class View:
             )
         ]
 
-        return self.section(Const.PREVIEW_SECTION_TITLE, content)
+        return self.section("Data", content)
 
     def aggregation_content(self):
         '''Create widgets for selection tab content'''
 
         self.aggregate_btn = widgets.Button(description="Aggregate and Render Map")
 
-        # TODO: 
+        # TODO:
         # store the generated file and enable download in the map page
         # Separate aggregate and render?
         # self.aggregated_download_btn = DownloadButton(filename='aggregated.csv', contents=lambda: b'Empty', description='Download')
@@ -202,7 +211,7 @@ class View:
         content.append(
             self.section(
                 "Data Aggregation", [
-                    displayable(model.selected_file, "Agmip file"),
+                    displayable(model.selected_files, "Agmip file"),
                     displayable(model.start_year, "Start year"),
                     displayable(model.end_year, "End year"),
                     self.aggregation_options,

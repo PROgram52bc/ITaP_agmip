@@ -10,7 +10,8 @@ from ipyleaflet import Choropleth, WidgetControl
 import subprocess
 from lib import SyncedProp
 import os
-from nb.utils import get_yield_variable, get_colormap
+import re
+from nb.utils import get_yield_variable, get_colormap, get_dir_content
 import netCDF4
 import json
 import csv
@@ -25,44 +26,73 @@ class Controller():
         from nb.cfg import model, view, logger, Const, send_notification
 
         try:
-            view.aggregate_btn.on_click(self.cb_aggregate)
+            ####################
+            #  Data Selection  #
+            ####################
 
             # model.radio_selections -> view.radios
             for radio in view.radios:
-                model.radio_selections[radio.description].sync_prop(radio)
+                model.radio_selections[radio.description] @ radio
 
-            # model.radio_selections -> model.data_file_path
-            model.data_file_path.add_inputs(*model.radio_selections.values())
+            # model.data_file_path
+            for segment in model.radio_selections.values():
+                model.data_file_path << segment
+            model.data_file_path >> model.get_data_file_path
             model.data_file_path.resync()
 
-            # Connect to dropdown selection
-            # model.dropdown_selections -> view.dropdown.options
-            SyncedProp() \
-                .add_input_prop(model.dropdown_selections, sync=True) \
-                .add_output_prop(view.folder_file_dropdown, prop='options', sync=True)
-
-            # view.dropdown.value, model.data_file_path -> model.selected_file
-            model.selected_file \
+            model.folder_file_selections \
                 << (model.data_file_path, dict(name="path")) \
-                << (view.folder_file_dropdown, dict(name="file")) \
-                >> (lambda path, file: os.path.join(path, file))
+                >> (lambda path: get_dir_content(path))
 
-            # view.zoom_slider.value + model.prod_data.value -> model.choro_data.value
+            SyncedProp() \
+                << (model.folder_file_selections, dict(sync=True)) \
+                >> (view.folder_file_multi_select, dict(prop='options', sync=True))
+
+            model.selected_files \
+                << (model.data_file_path, dict(name="path")) \
+                << (view.folder_file_multi_select, dict(name="files")) \
+                >> (lambda path, files: [ os.path.join(path, file) for file in files ])
+
+            model.no_selected_file \
+                << (model.selected_files, dict(name='f')) \
+                >> (lambda f: not f)
+            model.no_selected_file.resync()
+
+
+            ######################
+            #  Data Aggregation  #
+            ######################
+
+            view.aggregate_btn.on_click(self.cb_aggregate)
+
+            # TODO: use a "cache_file" prop <2022-04-08, David Deng> #
+            # model.start_year \
+            #     << (model.selected_files, dict(name='path')) \
+            #     >> (lambda path: int(year_regex.match(path).group(Const.YEAR_REGEX_START)))
+            # model.end_year \
+            #     << (model.selected_files, dict(name='path')) \
+            #     >> (lambda path: int(year_regex.match(path).group(Const.YEAR_REGEX_END)))
+
+            ########################
+            #  Data Visualization  #
+            ########################
+
+            # add callback to map
+            view.map.on_interaction(self.cb_set_coordinates)
+
             model.choro_data \
                 << (view.zoom_slider, dict(name='selected_year')) \
                 << (model.prod_data, dict(name='prod_data')) \
                 >> (lambda prod_data, selected_year: prod_data.get(selected_year, None))
 
-            # add callback to map
-            view.map.on_interaction(self.cb_set_coordinates)
-
             SyncedProp() \
-                .add_input_prop(model.no_selected_file, sync=True) \
-                .add_output_prop(view.raw_download_btn, prop='disabled', sync=True)
+                << (model.no_selected_file, dict(sync=True)) \
+                >> (view.raw_download_btn, dict(prop='disabled', sync=True))
 
-            SyncedProp() \
-                << (view.folder_file_dropdown, dict(sync=True)) \
-                >> (view.raw_download_btn, dict(prop="filename"))
+            # TODO: map to download file <2022-04-08, David Deng> #
+            # SyncedProp() \
+            #     << (view.folder_file_multi_select, dict(sync=True)) \
+            #     >> (view.raw_download_btn, dict(prop="filename"))
 
 
             # TODO: Fix Choropleth so that can automatically trigger update upon changing choro_data without creating new instance?
@@ -100,10 +130,13 @@ class Controller():
     def cb_aggregate(self, _):
         # input_file = "data/epic_hadgem2-es_hist_ssp2_co2_firr_yield_soy_annual_1980_2010.nc4"
         send_notification("Aggregating data...")
-        input_file = model.selected_file.value
-        if input_file is None:
+        # TODO: merge the files, retrieve from cache <2022-04-07, David Deng> #
+        input_files = model.selected_files.value
+        if not input_files:
             logger.error("Trying to aggregate without an input file selected")
             return
+        input_file = input_files[0]
+
         aggregation_option = view.aggregation_options.value
         weightmap_file = os.path.join(Const.WEIGHT_MAP_DIR, view.weight_map_dropdown.value)
         start_year = model.start_year.value
