@@ -3,6 +3,7 @@ from os.path import isfile, isdir, join, basename, splitext
 import ipywidgets as widgets
 import branca.colormap as cm
 from statistics import quantiles
+import xarray
 import re
 
 # For DownloadButton
@@ -123,6 +124,13 @@ def get_combine_cache_file(paths):
 
 def can_combine(paths):
     return get_combine_cache_file(paths) is not None
+
+def combine_nc4(inputs, output, concat_dim="time"):
+    # TODO: decode_times=False will erase the time base value. Manually parse it?
+    # See https://stackoverflow.com/questions/55648630/how-to-decode-the-time-variable-while-using-xarray-to-load-a-netcdf-file
+    # <2022-04-08, David Deng> #
+    ds = xarray.open_mfdataset(inputs, combine='nested', concat_dim=concat_dim, decode_times=False)
+    ds.to_netcdf(output)
 
 
 # https://stackoverflow.com/questions/61708701/how-to-download-a-file-using-ipywidget-button
