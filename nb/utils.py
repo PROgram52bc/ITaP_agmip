@@ -3,7 +3,8 @@ from os.path import isfile, isdir, join, basename, splitext
 import ipywidgets as widgets
 import branca.colormap as cm
 from statistics import quantiles
-import xarray
+import xarray as xr
+import pandas as pd
 import re
 
 # For DownloadButton
@@ -125,11 +126,27 @@ def get_combine_cache_file(paths):
 def can_combine(paths):
     return get_combine_cache_file(paths) is not None
 
-def combine_nc4(inputs, output, concat_dim="time"):
-    # TODO: decode_times=False will erase the time base value. Manually parse it?
-    # See https://stackoverflow.com/questions/55648630/how-to-decode-the-time-variable-while-using-xarray-to-load-a-netcdf-file
-    # <2022-04-08, David Deng> #
-    ds = xarray.open_mfdataset(inputs, combine='nested', concat_dim=concat_dim, decode_times=False)
+def set_time_unit(ds):
+    # TODO: support other units apart from years <2022-04-12, David Deng> #
+    unit, reference_date = ds.time.attrs['units'].split('since')
+    unit_map = {
+        # See https://pandas.pydata.org/docs/user_guide/timeseries.html#timeseries-offset-aliases for more
+        "years": "AS",
+    }
+    unit = unit.strip()
+    freq = unit_map[unit]
+    ds['time'] = pd.date_range(start=reference_date, periods=ds.sizes['time'], freq=freq)
+    return ds
+
+# files = ['data/raw/PEGASUS/HadGEM2-ES/rcp2p6/ssp2/noco2/firr/maize/pegasus_hadgem2-es_rcp2p6_ssp2_noco2_firr_yield_mai_annual_2031_2040.nc4', 'data/raw/PEGASUS/HadGEM2-ES/rcp2p6/ssp2/noco2/firr/maize/pegasus_hadgem2-es_rcp2p6_ssp2_noco2_firr_yield_mai_annual_2061_2070.nc4', 'data/raw/PEGASUS/HadGEM2-ES/rcp2p6/ssp2/noco2/firr/maize/pegasus_hadgem2-es_rcp2p6_ssp2_noco2_firr_yield_mai_annual_2021_2030.nc4', 'data/raw/PEGASUS/HadGEM2-ES/rcp2p6/ssp2/noco2/firr/maize/pegasus_hadgem2-es_rcp2p6_ssp2_noco2_firr_yield_mai_annual_2051_2060.nc4']
+
+def combine_nc4(inputs, output):
+    assert len(inputs) > 0, "inputs must not be empty"
+    it = iter(inputs)
+    first_input_file = next(it)
+    ds = set_time_unit(xr.open_dataset(first_input_file, decode_times=False))
+    for input_file in it:
+        ds = ds.merge(set_time_unit(xr.open_dataset(input_file, decode_times=False)))
     ds.to_netcdf(output)
 
 
