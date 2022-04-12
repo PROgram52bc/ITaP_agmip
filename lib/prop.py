@@ -71,29 +71,32 @@ class SyncedProp(HasTraits):
     def _notify_listeners(self, change):
         """ handle programmatic change on 'value' """
         value = change['new']
-        # print(f"setter called with {value}")
+        D(f"[_notify_listeners] {self}: setter called with {value}")
         for (widget, prop) in self._output_props:
             setattr(widget, prop, value)
 
-    def _update_self(self, change):
+    def _update_self(self, new_value, trans=None):
         """ handle updates from synced props """
         # print("change received:")
         # print(change)
-        self.value = change['new']
+        if trans is not None:
+            new_value = trans(new_value)
+        D(f"[_update_self] {self}: setting self to {new_value}")
+        self.value = new_value
 
-    # TODO: add transformer to input and output prop <2022-02-10, David Deng> #
-    def add_input_prop(self, widget, prop='value', sync=True):
+    def add_input_prop(self, widget, prop='value', sync=True, trans=None):
         """ Listen to a widget's property without modifying it when our own value changes.
         parameter list is the same as sync_prop
 
         :sync: whether to update the current object's value according to the input prop.
             It will also update the values of all registered output props.
             Default to True.
+        :trans: a transformer function for the updated value
         """
-        widget.observe(self._update_self, prop)
+        widget.observe(lambda change: self._update_self(change['new'], trans), prop)
         self._input_props.add((widget, prop))
         if sync:
-            self.value = getattr(widget, prop)
+            self._update_self(getattr(widget, prop), trans)
         return self
 
     # def resync(self):
@@ -109,6 +112,7 @@ class SyncedProp(HasTraits):
     #         pass
     #     self._update_self(value)
 
+    # TODO: add transformer to output prop <2022-02-10, David Deng> #
     def add_output_prop(self, widget, prop='value', sync=False):
         """ Listen to a widget's property without modifying it when our own value changes.
         parameter list is the same as sync_prop
