@@ -6,6 +6,7 @@ from statistics import quantiles
 import xarray as xr
 import pandas as pd
 import re
+from tabulate import tabulate
 
 # For DownloadButton
 import base64
@@ -39,10 +40,13 @@ def get_file_content(filepath):
     with open(filepath, "rb") as f:
         return f.read()
 
+
 def display_with_style(prop, label=None):
     """Display prop and label with styles
     """
     # TODO: add classes for styles <2022-03-31, David Deng> #
+    if isinstance(prop, list):
+        prop = tabulate([[item] for item in prop], tablefmt="html")
     if label:
         display(HTML(f"<p><b>{label}</b>: {prop}</p>"))
     else:
