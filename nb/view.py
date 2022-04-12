@@ -6,7 +6,7 @@ from ipyleaflet import Map, Marker, Popup, WidgetControl, Choropleth
 from IPython.display import HTML, display, clear_output, FileLink
 import logging
 from branca.colormap import linear
-from nb.utils import get_dir_content, displayable, DownloadButton, get_colormap, is_float, get_file_content, display_with_style
+from nb.utils import get_dir_content, displayable, DownloadButton, get_colormap, is_float, get_file_content, display_with_style, zipped
 
 
 class View:
@@ -154,30 +154,32 @@ class View:
 
         # download button
         self.raw_download_btn = DownloadButton(
-            filename="unnamed",
-            # FIXME: retrieve content from the combined file <2022-04-08, David Deng> #
-            contents=lambda: get_file_content(model.selected_files.value),
+            # TODO: name the zip file <2022-04-12, David Deng> #
+            filename="unnamed.zip",
+            contents=lambda: zipped(model.selected_files.value),
             description='Download')
 
         # multiselect
         self.folder_file_multi_select = widgets.SelectMultiple(options=[], description='Select file')
         self.select_all = widgets.Checkbox(
-            value=False,
+            value=True,
             description='Select All Available Files',
             disabled=False,
-            indent=False
         )
+
+        self.selection_previous_btn = self.get_navigation_button("prev", "Previous")
+        self.selection_next_btn = self.get_navigation_button("next", "Next")
 
         content = [
             radio_layout,
             # displayable(model.data_file_path, "data file path"),
-            # displayable(model.selected_files, "selected file"),
             self.select_all,
             self.folder_file_multi_select,
+            displayable(model.selected_files, "Selected files"),
             self.button_group(
-                self.get_navigation_button("prev", "Previous"),
+                self.selection_previous_btn,
                 self.raw_download_btn,
-                self.get_navigation_button("next", "Next"),
+                self.selection_next_btn,
             )
         ]
 

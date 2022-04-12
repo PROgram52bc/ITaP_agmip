@@ -6,6 +6,8 @@ from statistics import quantiles
 import xarray as xr
 import pandas as pd
 import re
+import io
+from zipfile import ZipFile
 from tabulate import tabulate
 
 # For DownloadButton
@@ -153,6 +155,18 @@ def combine_nc4(inputs, output):
         ds = ds.merge(set_time_unit(xr.open_dataset(input_file, decode_times=False)))
     ds.to_netcdf(output)
 
+def zipped(inputs):
+    """ return a byte sequence of the zipped files """
+    assert len(inputs) > 0, "inputs must not be empty"
+    zip_buffer = io.BytesIO()
+    with ZipFile(zip_buffer, "a") as zipfile:
+        for file in inputs:
+            zipfile.write(file, basename(file))
+    return zip_buffer.getvalue()
+
+def zip_files(inputs, output):
+    with open(output, "wb") as f:
+        f.write(zipped(inputs))
 
 # https://stackoverflow.com/questions/61708701/how-to-download-a-file-using-ipywidget-button
 class DownloadButton(widgets.Button):
