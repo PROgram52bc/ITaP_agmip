@@ -42,7 +42,6 @@ def get_file_content(filepath):
     with open(filepath, "rb") as f:
         return f.read()
 
-
 def display_with_style(prop, label=None):
     """Display prop and label with styles
     """
@@ -130,7 +129,7 @@ def get_combine_cache_file(paths):
     return combined_path
 
 def can_combine(paths):
-    return get_combine_cache_file(paths) is not None
+    return len(paths) > 0 and get_combine_cache_file(paths) is not None
 
 def set_time_unit(ds):
     # TODO: support other units apart from years <2022-04-12, David Deng> #
@@ -144,7 +143,7 @@ def set_time_unit(ds):
     ds['time'] = pd.date_range(start=reference_date, periods=ds.sizes['time'], freq=freq)
     return ds
 
-# files = ['data/raw/PEGASUS/HadGEM2-ES/rcp2p6/ssp2/noco2/firr/maize/pegasus_hadgem2-es_rcp2p6_ssp2_noco2_firr_yield_mai_annual_2031_2040.nc4', 'data/raw/PEGASUS/HadGEM2-ES/rcp2p6/ssp2/noco2/firr/maize/pegasus_hadgem2-es_rcp2p6_ssp2_noco2_firr_yield_mai_annual_2061_2070.nc4', 'data/raw/PEGASUS/HadGEM2-ES/rcp2p6/ssp2/noco2/firr/maize/pegasus_hadgem2-es_rcp2p6_ssp2_noco2_firr_yield_mai_annual_2021_2030.nc4', 'data/raw/PEGASUS/HadGEM2-ES/rcp2p6/ssp2/noco2/firr/maize/pegasus_hadgem2-es_rcp2p6_ssp2_noco2_firr_yield_mai_annual_2051_2060.nc4']
+files = ['data/raw/PEGASUS/HadGEM2-ES/rcp2p6/ssp2/noco2/firr/maize/pegasus_hadgem2-es_rcp2p6_ssp2_noco2_firr_yield_mai_annual_2031_2040.nc4', 'data/raw/PEGASUS/HadGEM2-ES/rcp2p6/ssp2/noco2/firr/maize/pegasus_hadgem2-es_rcp2p6_ssp2_noco2_firr_yield_mai_annual_2061_2070.nc4', 'data/raw/PEGASUS/HadGEM2-ES/rcp2p6/ssp2/noco2/firr/maize/pegasus_hadgem2-es_rcp2p6_ssp2_noco2_firr_yield_mai_annual_2021_2030.nc4', 'data/raw/PEGASUS/HadGEM2-ES/rcp2p6/ssp2/noco2/firr/maize/pegasus_hadgem2-es_rcp2p6_ssp2_noco2_firr_yield_mai_annual_2051_2060.nc4']
 
 def combine_nc4(inputs, output):
     assert len(inputs) > 0, "inputs must not be empty"

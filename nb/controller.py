@@ -11,7 +11,7 @@ import subprocess
 from lib import SyncedProp
 import os
 import re
-from nb.utils import get_yield_variable, get_colormap, get_dir_content
+from nb.utils import get_yield_variable, get_colormap, get_dir_content, can_combine
 import netCDF4
 import json
 import csv
@@ -48,16 +48,32 @@ class Controller():
                 << (model.folder_file_selections, dict(sync=True)) \
                 >> (view.folder_file_multi_select, dict(prop='options', sync=True))
 
+            model.select_all \
+                << (view.select_all) \
+                >> (view.folder_file_multi_select, dict(prop='disabled', sync=True))
+
             model.selected_files \
                 << (model.data_file_path, dict(name="path")) \
-                << (view.folder_file_multi_select, dict(name="files")) \
-                >> (lambda path, files: [ os.path.join(path, file) for file in files ])
+                << (view.folder_file_multi_select, dict(prop="value", name="selected_files")) \
+                << (view.folder_file_multi_select, dict(prop="options", name="all_files")) \
+                << (model.select_all, dict(name="select_all")) \
+                >> (lambda path, select_all, selected_files, all_files:
+                    [ os.path.join(path, file) for file in (all_files if select_all else selected_files) ])
+            model.selected_files.resync()
 
             model.no_selected_file \
                 << (model.selected_files, dict(name='f')) \
                 >> (lambda f: not f)
             model.no_selected_file.resync()
 
+            model.selected_combinable \
+                << (model.selected_files, dict(name='files')) \
+                >> (lambda files: can_combine(files))
+
+            SyncedProp() \
+                << (model.selected_combinable, dict(trans=lambda b: not b)) \
+                >> (view.selection_next_btn, dict(prop='disabled', sync=True)) \
+                >> (view.aggregate_btn, dict(prop='disabled', sync=True))
 
             ######################
             #  Data Aggregation  #
@@ -77,6 +93,27 @@ class Controller():
             #  Data Visualization  #
             ########################
 
+            model.selected_value \
+                << (model.selected_country, dict(name="country")) \
+                << (model.choro_data, dict(name="data")) \
+                >> (lambda country, data: data.get(country, 0))
+
+            model.choro_data_max \
+                << (model.choro_data, dict(name="choro")) \
+                >> (lambda choro: max(choro.values()))
+
+            model.choro_data_min \
+                << (model.choro_data, dict(name="choro")) \
+                >> (lambda choro: min(choro.values()))
+
+            model.choro_data_stdev \
+                << (model.choro_data, dict(name="choro")) \
+                >> (lambda choro: stdev(choro.values()))
+
+            model.choro_data_quantiles \
+                << (model.choro_data, dict(name="choro")) \
+                >> (lambda choro: quantiles(choro.values()))
+
             # add callback to map
             view.map.on_interaction(self.cb_set_coordinates)
 
@@ -86,7 +123,7 @@ class Controller():
                 >> (lambda prod_data, selected_year: prod_data.get(selected_year, None))
 
             SyncedProp() \
-                << (model.no_selected_file, dict(sync=True)) \
+                << (model.selected_files, dict(sync=True, trans=lambda fs: not bool(fs))) \
                 >> (view.raw_download_btn, dict(prop='disabled', sync=True))
 
             # TODO: map to download file <2022-04-08, David Deng> #

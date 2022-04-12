@@ -213,7 +213,7 @@ class View:
         content.append(
             self.section(
                 "Data Aggregation", [
-                    displayable(model.selected_files, "Agmip file"),
+                    displayable(model.selected_files, "Agmip files"),
                     displayable(model.start_year, "Start year"),
                     displayable(model.end_year, "End year"),
                     self.aggregation_options,

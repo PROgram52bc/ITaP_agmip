@@ -31,6 +31,7 @@ class Model:
         self.folder_file_selections = ComputedProp()
         self.select_all = SyncedProp(value=False)
         self.no_selected_file = ComputedProp(use_none=True)
+        self.selected_combinable = ComputedProp()
 
         ######################
         #  Data Aggregation  #
@@ -52,26 +53,11 @@ class Model:
 
         # mapinfo related data
         self.selected_country = SyncedProp(value=None) #
-        self.selected_value = ComputedProp() \
-            << (self.selected_country, dict(name="country")) \
-            << (self.choro_data, dict(name="data")) \
-            >> (lambda country, data: data.get(country, 0))
-
-        self.choro_data_max = ComputedProp() \
-            << (self.choro_data, dict(name="choro")) \
-            >> (lambda choro: max(choro.values()))
-
-        self.choro_data_min = ComputedProp() \
-            << (self.choro_data, dict(name="choro")) \
-            >> (lambda choro: min(choro.values()))
-
-        self.choro_data_stdev = ComputedProp() \
-            << (self.choro_data, dict(name="choro")) \
-            >> (lambda choro: stdev(choro.values()))
-
-        self.choro_data_quantiles = ComputedProp() \
-            << (self.choro_data, dict(name="choro")) \
-            >> (lambda choro: quantiles(choro.values()))
+        self.selected_value = ComputedProp()
+        self.choro_data_max = ComputedProp()
+        self.choro_data_min = ComputedProp()
+        self.choro_data_stdev = ComputedProp()
+        self.choro_data_quantiles = ComputedProp()
 
         logger.info('Data load completed')
 
