@@ -1,4 +1,6 @@
-from traitlets import HasTraits, Any, observe
+from traitlets import HasTraits, Any, Bool, observe
+import ipywidgets as widgets
+from IPython.display import clear_output
 
 DEBUG=0
 
@@ -275,7 +277,7 @@ class ComputedProp(HasTraits):
                 i = (widget, 'value')
             # don't update yet, because haven't added all inputs
             self.add_input(*i, sync=False)
-        if sync:
+        if inputs and sync:
             self.update_value()
         return self
 
@@ -291,3 +293,47 @@ class ComputedProp(HasTraits):
     def __rshift__(self, other):
         # TODO: verify other is a function <2022-04-07, David Deng> #
         return self.set_output(other)
+
+class NegatedProp(ComputedProp):
+    """ Invert the prop value """
+    value = Bool(read_only=True)
+    def __init__(self, prop):
+        super().__init__(use_none=True)
+        self.set_output(lambda orig: not orig)
+        self.add_input(prop, name="orig", sync=True)
+
+
+########################################
+#  Display-related utilities for Prop  #
+########################################
+
+def display_with_style(obj, label=None):
+    """Display obj and label with styles
+    """
+    # TODO: add classes for styles <2022-03-31, David Deng> #
+    if isinstance(obj, list):
+        obj = tabulate([[item] for item in obj], tablefmt="html")
+    if label:
+        display(widgets.HTML(f"<p><b>{label}</b>: {obj}</p>"))
+    else:
+        display(widgets.HTML(f"<p>{obj}</p>"))
+
+def displayable(prop, label=None):
+    def f(obj):
+        display_with_style(obj, label)
+    return widgets.interactive_output(f, {"obj": prop})
+
+def conditional_widget(cond, widget_if, widget_else=None):
+    """ An interactive widget that only gets displayed when cond evaluates to True """
+    # TODO: remove the padding? <2022-04-13, David Deng> #
+    out = widgets.Output()
+    def observer(_):
+        with out:
+            clear_output()
+            if cond.value:
+                display(widget_if)
+            elif widget_else is not None:
+                display(widget_else)
+    cond.observe(observer, 'value')
+    observer(None)
+    return out

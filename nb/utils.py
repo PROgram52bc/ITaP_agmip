@@ -9,6 +9,7 @@ import re
 import io
 from zipfile import ZipFile
 from tabulate import tabulate
+from lib.prop import display_with_style, displayable, if_then_else_widget
 
 # For DownloadButton
 import base64
@@ -41,22 +42,6 @@ def get_dir_content(dirpath):
 def get_file_content(filepath):
     with open(filepath, "rb") as f:
         return f.read()
-
-def display_with_style(prop, label=None):
-    """Display prop and label with styles
-    """
-    # TODO: add classes for styles <2022-03-31, David Deng> #
-    if isinstance(prop, list):
-        prop = tabulate([[item] for item in prop], tablefmt="html")
-    if label:
-        display(HTML(f"<p><b>{label}</b>: {prop}</p>"))
-    else:
-        display(HTML(f"<p>{prop}</p>"))
-
-def displayable(prop, label=None):
-    def f(prop):
-        display_with_style(prop, label)
-    return widgets.interactive_output(f, {"prop": prop})
 
 def get_yield_variable(f):
     variables = [ key for key in f.variables.keys() if key.startswith("yield_") ]
@@ -142,8 +127,6 @@ def set_time_unit(ds):
     freq = unit_map[unit]
     ds['time'] = pd.date_range(start=reference_date, periods=ds.sizes['time'], freq=freq)
     return ds
-
-files = ['data/raw/PEGASUS/HadGEM2-ES/rcp2p6/ssp2/noco2/firr/maize/pegasus_hadgem2-es_rcp2p6_ssp2_noco2_firr_yield_mai_annual_2031_2040.nc4', 'data/raw/PEGASUS/HadGEM2-ES/rcp2p6/ssp2/noco2/firr/maize/pegasus_hadgem2-es_rcp2p6_ssp2_noco2_firr_yield_mai_annual_2061_2070.nc4', 'data/raw/PEGASUS/HadGEM2-ES/rcp2p6/ssp2/noco2/firr/maize/pegasus_hadgem2-es_rcp2p6_ssp2_noco2_firr_yield_mai_annual_2021_2030.nc4', 'data/raw/PEGASUS/HadGEM2-ES/rcp2p6/ssp2/noco2/firr/maize/pegasus_hadgem2-es_rcp2p6_ssp2_noco2_firr_yield_mai_annual_2051_2060.nc4']
 
 def combine_nc4(inputs, output):
     assert len(inputs) > 0, "inputs must not be empty"
