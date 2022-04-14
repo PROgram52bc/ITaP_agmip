@@ -1,4 +1,4 @@
-name: nbtmpl
+name: agmipagg
 channels:
   - conda-forge
   - r
@@ -8,6 +8,7 @@ dependencies:
   - r-reshape
   - r-ncdf4
   - branca
+  - netcdf4
   - ipykernel
   - ipywidgets
   - jupyterlab
@@ -18,5 +19,7 @@ dependencies:
   - voila
   - git
   - pip
+  - xarray
+  - tabulate
   - pip:
     - git+https://github.com/jupyter-widgets/ipyleaflet@master
