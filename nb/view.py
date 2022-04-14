@@ -6,7 +6,7 @@ from ipyleaflet import Map, Marker, Popup, WidgetControl, Choropleth
 from IPython.display import HTML, display, clear_output, FileLink
 import logging
 from branca.colormap import linear
-from nb.utils import get_dir_content, displayable, DownloadButton, get_colormap, is_float, get_file_content, display_with_style, zipped
+from nb.utils import get_dir_content, displayable, DownloadButton, get_colormap, is_float, get_file_content, display_with_style, zipped, conditional_widget
 
 
 class View:
@@ -176,6 +176,7 @@ class View:
             self.select_all,
             self.folder_file_multi_select,
             displayable(model.selected_files, "Selected files"),
+            conditional_widget(~model.selected_combinable & model.selected_files, widgets.HTML("⚠️ You should select files with contiguous years.")),
             self.button_group(
                 self.selection_previous_btn,
                 self.raw_download_btn,

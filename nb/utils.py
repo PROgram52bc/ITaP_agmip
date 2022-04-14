@@ -9,13 +9,30 @@ import re
 import io
 from zipfile import ZipFile
 from tabulate import tabulate
-from lib.prop import display_with_style, displayable, if_then_else_widget
+from lib.prop import conditional_widget
 
 # For DownloadButton
 import base64
 import hashlib
 from typing import Callable
 from IPython.display import HTML
+
+def display_with_style(obj, label=None):
+    """Display obj and label with styles
+    """
+    # TODO: add classes for styles <2022-03-31, David Deng> #
+    if isinstance(obj, list):
+        obj = tabulate([[item] for item in obj], tablefmt="html")
+    if label:
+        display(widgets.HTML(f"<p><b>{label}</b>: {obj}</p>"))
+    else:
+        display(widgets.HTML(f"<p>{obj}</p>"))
+
+def displayable(prop, label=None):
+    def f(obj):
+        display_with_style(obj, label)
+    return widgets.interactive_output(f, {"obj": prop})
+
 
 def is_float(n):
     """check if number is float

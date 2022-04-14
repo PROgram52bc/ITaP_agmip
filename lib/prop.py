@@ -294,34 +294,46 @@ class ComputedProp(HasTraits):
         # TODO: verify other is a function <2022-04-07, David Deng> #
         return self.set_output(other)
 
+    def __invert__(self):
+        return NegatedProp(self)
+
+    def __and__(self, other):
+        return AndProp(self, other)
+
+    def __or__(self, other):
+        return OrProp(self, other)
+
 class NegatedProp(ComputedProp):
     """ Invert the prop value """
     value = Bool(read_only=True)
-    def __init__(self, prop):
+    def __init__(self, p):
         super().__init__(use_none=True)
-        self.set_output(lambda orig: not orig)
-        self.add_input(prop, name="orig", sync=True)
+        self >> (lambda p: not p)
+        self << (p, dict(name="p", sync=True))
 
+class AndProp(ComputedProp):
+    """ Invert the prop value """
+    value = Bool(read_only=True)
+    def __init__(self, p1, p2):
+        super().__init__(use_none=True)
+        self >> (lambda p1, p2: bool(p1 and p2))
+        self << (p1, dict(name="p1", sync=False))
+        self << (p2, dict(name="p2", sync=False))
+        self.resync()
+
+class OrProp(ComputedProp):
+    """ Invert the prop value """
+    value = Bool(read_only=True)
+    def __init__(self, p1, p2):
+        super().__init__(use_none=True)
+        self >> (lambda p1, p2: bool(p1 or p2))
+        self << (p1, dict(name="p1", sync=False))
+        self << (p2, dict(name="p2", sync=False))
+        self.resync()
 
 ########################################
 #  Display-related utilities for Prop  #
 ########################################
-
-def display_with_style(obj, label=None):
-    """Display obj and label with styles
-    """
-    # TODO: add classes for styles <2022-03-31, David Deng> #
-    if isinstance(obj, list):
-        obj = tabulate([[item] for item in obj], tablefmt="html")
-    if label:
-        display(widgets.HTML(f"<p><b>{label}</b>: {obj}</p>"))
-    else:
-        display(widgets.HTML(f"<p>{obj}</p>"))
-
-def displayable(prop, label=None):
-    def f(obj):
-        display_with_style(obj, label)
-    return widgets.interactive_output(f, {"obj": prop})
 
 def conditional_widget(cond, widget_if, widget_else=None):
     """ An interactive widget that only gets displayed when cond evaluates to True """
