@@ -9,9 +9,10 @@ import ipywidgets as widgets
 from ipyleaflet import Choropleth, WidgetControl
 import subprocess
 from lib import SyncedProp
+from statistics import stdev, quantiles
 import os
 import re
-from nb.utils import get_yield_variable, get_colormap, get_dir_content, can_combine, get_combine_info
+from nb.utils import get_yield_variable, get_colormap, get_dir_content, can_combine, get_combine_info, combine_nc4
 import netCDF4
 import json
 import csv
@@ -175,7 +176,10 @@ class Controller():
         if not input_files:
             logger.error("Trying to aggregate without an input file selected")
             return
-        input_file = input_files[0]
+        info = get_combine_info(input_files)
+        # TODO: output to cache dir, implement cache? <2022-04-13, David Deng> #
+        combine_nc4(input_files, info['file_name'])
+        input_file = info['file_name']
 
         aggregation_option = view.aggregation_options.value
         weightmap_file = os.path.join(Const.WEIGHT_MAP_DIR, view.weight_map_dropdown.value)

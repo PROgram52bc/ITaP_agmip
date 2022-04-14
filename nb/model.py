@@ -7,7 +7,6 @@ import glob
 import pandas as pd
 from lib import SyncedProp, ComputedProp, Prop
 import json
-from statistics import stdev, quantiles
 
 class Model:
 
