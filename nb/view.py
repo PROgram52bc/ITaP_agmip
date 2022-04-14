@@ -176,7 +176,9 @@ class View:
             self.select_all,
             self.folder_file_multi_select,
             displayable(model.selected_files, "Selected files"),
-            conditional_widget(~model.selected_combinable & model.selected_files, widgets.HTML("⚠️ You should select files with contiguous years.")),
+            conditional_widget(
+                ~model.selected_combinable & model.selected_files,
+                widgets.HTML("⚠️ Please select files with contiguous years in order to proceed.")),
             self.button_group(
                 self.selection_previous_btn,
                 self.raw_download_btn,
@@ -214,9 +216,14 @@ class View:
         content.append(
             self.section(
                 "Data Aggregation", [
-                    displayable(model.selected_files, "Agmip files"),
-                    displayable(model.start_year, "Start year"),
-                    displayable(model.end_year, "End year"),
+                    conditional_widget(
+                        model.selected_combinable,
+                        widgets.VBox([
+                            displayable(model.selected_files, "Agmip files"),
+                            displayable(model.start_year, "Start year"),
+                            displayable(model.end_year, "End year"),
+                        ]),
+                        widgets.HTML("⚠️ Please select some files with contiguous years in order to aggregate.")),
                     self.aggregation_options,
                     self.weight_map_dropdown,
                     self.aggregate_btn,

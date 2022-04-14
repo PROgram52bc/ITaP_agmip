@@ -11,7 +11,7 @@ import subprocess
 from lib import SyncedProp
 import os
 import re
-from nb.utils import get_yield_variable, get_colormap, get_dir_content, can_combine
+from nb.utils import get_yield_variable, get_colormap, get_dir_content, can_combine, get_combine_info
 import netCDF4
 import json
 import csv
@@ -61,11 +61,6 @@ class Controller():
                     [ os.path.join(path, file) for file in (all_files if select_all else selected_files) ])
             model.selected_files.resync()
 
-            model.no_selected_file \
-                << (model.selected_files, dict(name='f')) \
-                >> (lambda f: not f)
-            model.no_selected_file.resync()
-
             model.selected_combinable \
                 << (model.selected_files, dict(name='files')) \
                 >> (lambda files: can_combine(files))
@@ -78,6 +73,14 @@ class Controller():
             ######################
             #  Data Aggregation  #
             ######################
+
+            model.start_year \
+                << (model.selected_files, dict(name="files")) \
+                >> (lambda files: get_combine_info(files).get("start_year") if files else None)
+
+            model.end_year \
+                << (model.selected_files, dict(name="files")) \
+                >> (lambda files: get_combine_info(files).get("end_year") if files else None)
 
             view.aggregate_btn.on_click(self.cb_aggregate)
 

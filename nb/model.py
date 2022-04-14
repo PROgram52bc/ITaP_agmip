@@ -30,7 +30,6 @@ class Model:
         self.data_file_path = ComputedProp()
         self.folder_file_selections = ComputedProp()
         self.select_all = SyncedProp(value=False)
-        self.no_selected_file = ComputedProp(use_none=True)
         self.selected_combinable = ComputedProp()
 
         ######################

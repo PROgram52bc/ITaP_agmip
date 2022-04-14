@@ -107,7 +107,7 @@ def is_contiguous(ranges):
             return False
     return True
 
-def get_combine_cache_file(paths):
+def get_combine_info(paths):
     """compute the filename used to store the combined cache of the given files
     example paths: [
     'data/raw/IMAGE_LEITAP/GFDL-ESM2M/hist/ssp2/co2/firr/maize/image_gfdl-esm2m_hist_ssp2_co2_firr_yield_mai_annual_1971_1980.nc4',
@@ -115,23 +115,25 @@ def get_combine_cache_file(paths):
     ]
 
     :files: a list of strings containing the file names
-    :returns: None if not combinable
+    :returns: a dict in the form of { 'start_year': 1971, 'end_year': 1990, 'file_name': ..., 'base': ... }, an empty dict if not combinable
 
     """
     assert paths and len(paths) > 0, "paths must not be empty"
+    # if not paths:
+    #     return None
     ranges = sorted([ (get_start_year(p), get_end_year(p)) for p in paths ])
     if not is_contiguous(ranges):
-        return None
-    combined_range = ranges[0][0], ranges[-1][1]
+        return {}
+    start, end = ranges[0][0], ranges[-1][1]
     path = basename(paths[0])
     base = get_base_from_year_path(path)
     ext = get_ext_from_year_path(path)
 
-    combined_path = f"{base}_{combined_range[0]}_{combined_range[1]}.{ext}"
-    return combined_path
+    file_name = f"{base}_{start}_{end}.{ext}"
+    return { 'start_year': start, 'end_year': end, 'file_name': file_name, 'base': base }
 
 def can_combine(paths):
-    return len(paths) > 0 and get_combine_cache_file(paths) is not None
+    return len(paths) > 0 and get_combine_info(paths)
 
 def set_time_unit(ds):
     # TODO: support other units apart from years <2022-04-12, David Deng> #
