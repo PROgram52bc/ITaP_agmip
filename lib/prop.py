@@ -41,13 +41,6 @@ class Prop(HasTraits):
     def __init__(self, value=None):
         self.value = value
 
-# TODO: overload the << and >> operator for add_input and set_output
-# overload @ operator for sync_prop.
-# Examples: p1 << (p2, dict(value="value", sync=True)) << p3
-# p1 @ p4
-# See https://docs.python.org/3/reference/datamodel.html#object.__ilshift__ 
-# https://stackoverflow.com/questions/6392739/what-does-the-at-symbol-do-in-python/28997112#28997112 <2022-03-24, David Deng> #
-
 class SyncedProp(HasTraits):
     """ Single synced prop to multiple widgets
     s1 = SyncedProp(widget, ..., value=None) # prop default to 'value'
@@ -58,7 +51,6 @@ class SyncedProp(HasTraits):
 
     def __init__(self, *args, value=None):
         """ args is a list of 2-tuples (widget, prop) or widget """
-        # TODO: use a list to store the props and use index to identify each prop? <2022-03-24, David Deng> #
         self._output_props = set() # a set of (widget, prop), only update their values
         self._input_props = set() # a set of (widget, prop), only listen to their updates
         self.value = value

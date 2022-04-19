@@ -51,11 +51,12 @@ class Model:
 
         # mapinfo related data
         self.selected_country = SyncedProp(value=None) #
-        self.selected_value = ComputedProp()
-        self.choro_data_max = ComputedProp()
-        self.choro_data_min = ComputedProp()
-        self.choro_data_stdev = ComputedProp()
-        self.choro_data_quantiles = ComputedProp()
+        self.selected_info = ComputedProp()
+        self.summary_info = ComputedProp()
+        # self.choro_data_max = ComputedProp()
+        # self.choro_data_min = ComputedProp()
+        # self.choro_data_stdev = ComputedProp()
+        # self.choro_data_quantiles = ComputedProp()
 
         logger.info('Data load completed')
 

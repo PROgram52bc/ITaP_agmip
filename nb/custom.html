@@ -52,6 +52,30 @@
         width: fit-content;
     }
 
+    /* Table formatting 
+       Adapted from https://www.w3schools.com/css/tryit.asp?filename=trycss_table_fancy
+     */
+
+    /* highlight the first column */
+    .fancy-table td:first-child {
+        font-weight: bold;
+    }
+    /* conditionally hide first column that should be bolded and served as the key of the entry */
+    .hide-first-column td:first-child {
+        display: none;
+    }
+    
+    .fancy-table {
+        border-collapse: collapse;
+        width: auto;
+    }
+    .fancy-table td {
+        border: 1px solid #ddd;
+        padding: 5px;
+    }
+    .fancy-table tr:nth-child(even){background-color: #f2f2f2;}
+    .fancy-table tr:hover {background-color: #ddd;}
+
 </style>
 <script>
     /* NOTE Put custom JavaScript here to change behavior of app */

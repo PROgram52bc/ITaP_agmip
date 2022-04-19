@@ -160,7 +160,7 @@ class View:
             description='Download')
 
         # multiselect
-        self.folder_file_multi_select = widgets.SelectMultiple(options=[], description='Select file')
+        self.folder_file_multi_select = widgets.SelectMultiple(options=[], description='Select files')
         self.select_all = widgets.Checkbox(
             value=True,
             description='Select All Available Files',
@@ -240,7 +240,6 @@ class View:
 
 
 # create map
-        content = []
 
         self.map = Map(center=center, zoom=2)
 
@@ -256,34 +255,20 @@ class View:
         zscontrol = WidgetControl(widget=self.zoom_slider, position="bottomleft", transparent_bg=True)
         self.map.add_control(zscontrol)
 
-        # TODO: fix popup <2022-03-29, David Deng> #
-        # self.popup = Popup(location=(0,0), close_button=True, auto_close=True, close_on_escape_key=True)
-        # self.map.add_layer(self.popup)
+        self.selected_info = displayable(model.selected_info, "Selected Country Info")
+        self.summary_info = displayable(model.summary_info, "Summary Statistics")
+        # self.mapinfo = widgets.interactive_output(self.render_mapinfo, {
+        #     'Minimum Value': model.choro_data_min,
+        #     'Maximum Value': model.choro_data_max,
+        #     'Standard Deviation': model.choro_data_stdev,
+        #     'Quantiles': model.choro_data_quantiles,
+        # })
 
-        self.mapinfo = widgets.interactive_output(self.render_mapinfo, {
-            'Selected Country': model.selected_country,
-            'Production': model.selected_value,
-            'Minimum Value': model.choro_data_min,
-            'Maximum Value': model.choro_data_max,
-            'Standard Deviation': model.choro_data_stdev,
-            'Quantiles': model.choro_data_quantiles,
-        })
-
-        content.append(self.map)
-        content.append(self.mapinfo)
+        content = [
+            self.map,
+            widgets.HBox([ self.selected_info, self.summary_info ], layout={'justify-content': 'space-between'})
+        ]
         return self.section("Map", content)
-
-    def render_mapinfo(self, **kwargs):
-        for k,v in kwargs.items():
-            if k == "Quantiles" and v is not None:
-                display_with_style(round(v[0], 2), "1st Quantile")
-                display_with_style(round(v[1], 2), "2nd Quantile")
-                display_with_style(round(v[2], 2), "3rd Quantile")
-            else:
-                if is_float(v):
-                    display_with_style(round(v, 2), k)
-                else:
-                    display_with_style(v, k)
 
     def refresh_map_colormap(self):
         # replace the colormap legend control

@@ -2,7 +2,7 @@ from os import listdir
 from os.path import isfile, isdir, join, basename, splitext
 import ipywidgets as widgets
 import branca.colormap as cm
-from statistics import quantiles
+from statistics import stdev, quantiles
 import xarray as xr
 import pandas as pd
 import re
@@ -20,13 +20,20 @@ from IPython.display import HTML
 def display_with_style(obj, label=None):
     """Display obj and label with styles
     """
+    w = widgets.HTML()
     # TODO: add classes for styles <2022-03-31, David Deng> #
     if isinstance(obj, list):
-        obj = tabulate([[item] for item in obj], tablefmt="html")
+        obj = tabulate([["", item] for item in obj], tablefmt="html")
+        w.add_class("hide-first-column")
+    elif isinstance(obj, dict):
+        obj = tabulate([[k,v] for k,v in obj.items()], tablefmt="html")
+
+    w.add_class("fancy-table")
     if label:
-        display(widgets.HTML(f"<p><b>{label}</b>: {obj}</p>"))
+        w.value = f"<p><b>{label}</b>: {obj}</p>"
     else:
-        display(widgets.HTML(f"<p>{obj}</p>"))
+        w.value = f"<p>{obj}</p>"
+    display(w)
 
 def displayable(prop, label=None):
     def f(obj):
@@ -79,6 +86,17 @@ def get_colormap(data=None):
     data_nozero = [ d for d in data if d > 0 ]
     qt = quantiles(data_nozero)
     return cm.LinearColormap(colors=colors, index=[mn, *qt, mx], vmin=round(mn, 2), vmax=round(mx, 2))
+
+def get_summary_info(data):
+    qt1, qt2, qt3 = quantiles(data)
+    return {
+        "Max": round(max(data), 2),
+        "Min": round(min(data), 2),
+        "Standard Deviation": round(stdev(data), 2),
+        "1st Quantile": round(qt1, 2),
+        "2nd Quantile": round(qt2, 2),
+        "3rd Quantile": round(qt3, 2),
+    }
 
 year_regex = re.compile(r"(?P<base>.*)_(?P<start>[0-9]{4})_(?P<end>[0-9]{4})\.(?P<ext>\w{1,3})")
 def get_start_year(path):

@@ -9,10 +9,10 @@ import ipywidgets as widgets
 from ipyleaflet import Choropleth, WidgetControl
 import subprocess
 from lib import SyncedProp
-from statistics import stdev, quantiles
 import os
 import re
-from nb.utils import get_yield_variable, get_colormap, get_dir_content, can_combine, get_combine_info, combine_nc4
+from nb.utils import get_yield_variable, get_colormap, get_dir_content, \
+    can_combine, get_combine_info, combine_nc4, get_summary_info
 import netCDF4
 import json
 import csv
@@ -85,38 +85,37 @@ class Controller():
 
             view.aggregate_btn.on_click(self.cb_aggregate)
 
-            # TODO: use a "cache_file" prop <2022-04-08, David Deng> #
-            # model.start_year \
-            #     << (model.selected_files, dict(name='path')) \
-            #     >> (lambda path: int(year_regex.match(path).group(Const.YEAR_REGEX_START)))
-            # model.end_year \
-            #     << (model.selected_files, dict(name='path')) \
-            #     >> (lambda path: int(year_regex.match(path).group(Const.YEAR_REGEX_END)))
-
             ########################
             #  Data Visualization  #
             ########################
 
-            model.selected_value \
+            model.selected_info \
                 << (model.selected_country, dict(name="country")) \
                 << (model.choro_data, dict(name="data")) \
-                >> (lambda country, data: data.get(country, 0))
+                >> (lambda country, data: {
+                    "Name": country,
+                    "Production": round(data.get(country, 0), 2)
+                })
 
-            model.choro_data_max \
+            model.summary_info \
                 << (model.choro_data, dict(name="choro")) \
-                >> (lambda choro: max(choro.values()))
+                >> (lambda choro: get_summary_info(choro.values()))
 
-            model.choro_data_min \
-                << (model.choro_data, dict(name="choro")) \
-                >> (lambda choro: min(choro.values()))
+#             model.choro_data_max \
+#                 << (model.choro_data, dict(name="choro")) \
+#                 >> (lambda choro: max(choro.values()))
 
-            model.choro_data_stdev \
-                << (model.choro_data, dict(name="choro")) \
-                >> (lambda choro: stdev(choro.values()))
+#             model.choro_data_min \
+#                 << (model.choro_data, dict(name="choro")) \
+#                 >> (lambda choro: min(choro.values()))
 
-            model.choro_data_quantiles \
-                << (model.choro_data, dict(name="choro")) \
-                >> (lambda choro: quantiles(choro.values()))
+#             model.choro_data_stdev \
+#                 << (model.choro_data, dict(name="choro")) \
+#                 >> (lambda choro: stdev(choro.values()))
+
+#             model.choro_data_quantiles \
+#                 << (model.choro_data, dict(name="choro")) \
+#                 >> (lambda choro: quantiles(choro.values()))
 
             # add callback to map
             view.map.on_interaction(self.cb_set_coordinates)
