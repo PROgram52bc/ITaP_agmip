@@ -26,13 +26,14 @@ def is_dict_unpackable(obj):
 def extract_operand(rhs):
     if (isinstance(rhs, tuple) and
             len(rhs) == 2 and
-            isinstance(rhs[0], HasTraits) and
+            (isinstance(rhs[0], HasTraits) or
+             callable(rhs[0])) and
             isinstance(rhs[1], dict)):
         return rhs
-    elif isinstance(rhs, HasTraits):
+    elif isinstance(rhs, HasTraits) or callable(rhs):
         return rhs, dict()
     else:
-        raise ValueError(f"Invalid operand: {rhs}. Operand must be either a prop, or a (prop, dict)")
+        raise ValueError(f"Invalid operand: {rhs}. Operand must be either a prop/callable, or a (prop/callable, dict)")
 
 
 class Prop(HasTraits):
@@ -107,7 +108,7 @@ class SyncedProp(HasTraits):
     #     self._update_self(value)
 
     # TODO: add transformer to output prop <2022-02-10, David Deng> #
-    def add_output_prop(self, widget, prop='value', sync=False):
+    def add_output_prop(self, widget, prop='value', sync=True):
         """ Listen to a widget's property without modifying it when our own value changes.
         parameter list is the same as sync_prop
 
@@ -179,7 +180,7 @@ class ComputedProp(HasTraits):
     def get_named_inputs(self):
         return { name: self._cache_values[tup] for name, tup in self._inputs.items() if tup in self._cache_values }
 
-    def __init__(self, *inputs, f=None, use_none=False):
+    def __init__(self, use_none=False):
         """ initializer.
 
         :inputs: input triples.
@@ -187,19 +188,14 @@ class ComputedProp(HasTraits):
         :returns: None
 
         """
-        if f is None:
-            f = lambda **kwargs: str(kwargs) if kwargs else None
-        self.set_output(f)
 
         self._inputs = {} # { name: (widget, prop), ... }
         self._cache_values = {} # { (widget, prop): value, ... }
 
         self.use_none = use_none
 
-        # if not inputs:
-        #     raise ValueError("ComputedProp must be initialized with at least one input tuple or triple.")
-
-        self.add_inputs(*inputs)
+        f = lambda **kwargs: str(kwargs) if kwargs else None
+        self.set_output(f, sync=False) # don't evaluate right now
 
     def update_cache(self):
         """ update the cache value by querying each of the inputs """
@@ -236,7 +232,7 @@ class ComputedProp(HasTraits):
             self._cache_values[h] = change['new']
         self.update_value()
 
-    def add_input(self, widget, prop="value", name=None, sync=False):
+    def add_input(self, widget, prop="value", name=None, sync=True):
         """ add a widget's property with the current object.
 
         :widget: the widget whose property is to be taken as an input
@@ -261,21 +257,12 @@ class ComputedProp(HasTraits):
 
         return self
 
-    def add_inputs(self, *inputs, sync=True):
-        for i in inputs:
-            if not is_list_unpackable(i):
-                # if i is not a tuple, it is a widget, prop default to 'value'
-                widget = i
-                i = (widget, 'value')
-            # don't update yet, because haven't added all inputs
-            self.add_input(*i, sync=False)
-        if inputs and sync:
-            self.update_value()
-        return self
 
-    def set_output(self, f):
+    def set_output(self, f, sync=True):
         """ f takes an expanded **kwargs, """
         self._f = f
+        if sync:
+            self.update_value()
         return self
 
     def __lshift__(self, other):
@@ -283,8 +270,9 @@ class ComputedProp(HasTraits):
         return self.add_input(prop, **options)
 
     def __rshift__(self, other):
-        # TODO: verify other is a function <2022-04-07, David Deng> #
-        return self.set_output(other)
+        # TODO: verify f is a function <2022-04-07, David Deng> #
+        f, options = extract_operand(other)
+        return self.set_output(f, **options)
 
     def __invert__(self):
         return NegatedProp(self)
@@ -300,7 +288,7 @@ class NegatedProp(ComputedProp):
     value = Bool(read_only=True)
     def __init__(self, p):
         super().__init__(use_none=True)
-        self >> (lambda p: not p)
+        self >> (lambda p: not p, dict(sync=False))
         self << (p, dict(name="p", sync=True))
 
 class AndProp(ComputedProp):
@@ -308,7 +296,7 @@ class AndProp(ComputedProp):
     value = Bool(read_only=True)
     def __init__(self, p1, p2):
         super().__init__(use_none=True)
-        self >> (lambda p1, p2: bool(p1 and p2))
+        self >> (lambda p1, p2: bool(p1 and p2), dict(sync=False))
         self << (p1, dict(name="p1", sync=False))
         self << (p2, dict(name="p2", sync=False))
         self.resync()
@@ -318,7 +306,7 @@ class OrProp(ComputedProp):
     value = Bool(read_only=True)
     def __init__(self, p1, p2):
         super().__init__(use_none=True)
-        self >> (lambda p1, p2: bool(p1 or p2))
+        self >> (lambda p1, p2: bool(p1 or p2), dict(sync=False))
         self << (p1, dict(name="p1", sync=False))
         self << (p2, dict(name="p2", sync=False))
         self.resync()
@@ -341,3 +329,26 @@ def conditional_widget(cond, widget_if, widget_else=None):
     cond.observe(observer, 'value')
     observer(None)
     return out
+
+def display_with_style(obj, label=None):
+    """Display obj and label with styles
+    """
+    w = widgets.HTML()
+    # TODO: add classes for styles <2022-03-31, David Deng> #
+    if isinstance(obj, list):
+        obj = tabulate([["", item] for item in obj], tablefmt="html")
+        w.add_class("hide-first-column")
+    elif isinstance(obj, dict):
+        obj = tabulate([[k,v] for k,v in obj.items()], tablefmt="html")
+
+    w.add_class("fancy-table")
+    if label:
+        w.value = f"<p><b>{label}</b>: {obj}</p>"
+    else:
+        w.value = f"<p>{obj}</p>"
+    display(w)
+
+def displayable(prop, label=None):
+    def f(obj):
+        display_with_style(obj, label)
+    return widgets.interactive_output(f, {"obj": prop})
