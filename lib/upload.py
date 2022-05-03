@@ -10,7 +10,7 @@ def D(msg):
     if DEBUG:
         print(msg)
 
-class Upload(VBox):
+class Upload(HBox):
     disabled = Bool(False, help="Enable or disable user changes.")
 
     def __init__(self, upload_dir=".", upload_fname=None, overwrite=False):

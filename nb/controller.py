@@ -71,8 +71,8 @@ class Controller():
                 >> (view.selection_next_btn, dict(prop='disabled', sync=True)) \
                 >> (view.aggregate_btn, dict(prop='disabled', sync=True)) \
                 >> (view.aggregation_options, dict(prop='disabled', sync=True)) \
-                >> (view.aggregate_btn, dict(prop='disabled', sync=True))
-                # >> (view.weight_map_select_upload, dict(prop='disabled', sync=True)) \
+                >> (view.aggregate_btn, dict(prop='disabled', sync=True)) \
+                >> (view.region_map_select_upload, dict(prop='disabled', sync=True))
 
             ######################
             #  Data Aggregation  #
@@ -189,6 +189,7 @@ class Controller():
 
         aggregation_option = view.aggregation_options.value
         weightmap_file = view.weight_map_select_upload.value
+        regionmap_file = view.region_map_select_upload.value
         start_year = model.start_year.value
         end_year = model.end_year.value
         if start_year is None:
@@ -213,7 +214,7 @@ class Controller():
             "examples/rfunctions/agmip.run.r",
             "examples/rfunctions/agmip.fns.r",
             input_file,
-            "examples/regionmap/WorldId.csv",
+            regionmap_file,
             aggregation_option,
             weightmap_file,
             str(start_year),

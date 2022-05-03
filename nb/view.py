@@ -208,12 +208,13 @@ class View:
             layout={'overflow': 'hidden', 'height': 'auto', 'width': 'auto'},
             options=Const.AGGREGATION_OPTIONS)
 
-        self.weight_map_dropdown = widgets.Dropdown(description="Weightmap",
-            options=weightmaps)
+        self.region_map_select_upload = SelectOrUpload(select_dir=Const.REGION_MAP_DIR,
+                                                       upload_dir=Const.REGION_MAP_UPLOAD_DIR,
+                                                       overwrite=True, label="Region Map")
 
         self.weight_map_select_upload = SelectOrUpload(select_dir=Const.WEIGHT_MAP_DIR,
                                                        upload_dir=Const.WEIGHT_MAP_UPLOAD_DIR,
-                                                       overwrite=True)
+                                                       overwrite=True, label="Weight Map")
 
         content = []
         content.append(
@@ -228,6 +229,7 @@ class View:
                         ]),
                         widgets.HTML("⚠️ Please select some files with contiguous years in order to aggregate.")),
                     self.aggregation_options,
+                    self.region_map_select_upload,
                     self.weight_map_select_upload,
                     self.aggregate_btn,
                     # self.aggregated_download_btn,
