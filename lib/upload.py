@@ -97,9 +97,9 @@ class SelectOrUpload(VBox):
 
         self.target_file = ComputedProp(use_none=True) \
             << (self.use_upload, dict(name='use_upload')) \
-            << (self.uploaded_file, dict(name='up')) \
-            << self._select \
-            >> (lambda use_upload, up: up if use_upload else self._select.value)
+            << (self.uploaded_file, dict(name='upl')) \
+            << (self._select, dict(name="sel")) \
+            >> (lambda use_upload, upl, sel: upl if use_upload else os.path.join(select_dir, sel)) # upl is already the absolute path 
 
         self.value = Unicode()
         SyncedProp() << self.target_file >> self

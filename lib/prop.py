@@ -1,5 +1,6 @@
 from traitlets import HasTraits, Any, Bool, observe
 import ipywidgets as widgets
+from tabulate import tabulate
 from IPython.display import clear_output
 
 DEBUG=0
@@ -50,6 +51,7 @@ class SyncedProp(HasTraits):
 
     value = Any()
 
+    # TODO: remove args <2022-05-03, David Deng> #
     def __init__(self, *args, value=None):
         """ args is a list of 2-tuples (widget, prop) or widget """
         self._output_props = set() # a set of (widget, prop), only update their values

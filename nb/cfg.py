@@ -111,6 +111,7 @@ class Const:
     COMBINED_CACHE_DIR = 'cache/combined/'
     AGGREGATED_CACHE_DIR = 'cache/aggregated/'
     WEIGHT_MAP_DIR = 'examples/weightmap/'
+    WEIGHT_MAP_UPLOAD_DIR = 'cache/weightmaps'
     AGGREGATION_OPTIONS = [
         ("Regional Production (in metric tons)", 'pr'),
         ("Regional Yields (metric tons / hectare) Weighted by each Gridcells Havested Area", 'yi'),

@@ -8,7 +8,6 @@ import pandas as pd
 import re
 import io
 from zipfile import ZipFile
-from tabulate import tabulate
 from lib.prop import conditional_widget, displayable, display_with_style
 
 # For DownloadButton

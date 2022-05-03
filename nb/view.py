@@ -7,6 +7,7 @@ from IPython.display import HTML, display, clear_output, FileLink
 import logging
 from branca.colormap import linear
 from lib.utils import get_dir_content, displayable, DownloadButton, get_colormap, is_float, get_file_content, display_with_style, zipped, conditional_widget
+from lib.upload import SelectOrUpload
 
 
 class View:
@@ -210,10 +211,9 @@ class View:
         self.weight_map_dropdown = widgets.Dropdown(description="Weightmap",
             options=weightmaps)
 
-        self.weight_map_upload = widgets.FileUpload(accept='.csv', multiple=False)
-        self.weight_map_clear_btn = widgets.Button(description="Reset Uploaded Weightmap")
-
-        self.worldids = widgets.Dropdown(description="")
+        self.weight_map_select_upload = SelectOrUpload(select_dir=Const.WEIGHT_MAP_DIR,
+                                                       upload_dir=Const.WEIGHT_MAP_UPLOAD_DIR,
+                                                       overwrite=True)
 
         content = []
         content.append(
@@ -228,9 +228,7 @@ class View:
                         ]),
                         widgets.HTML("⚠️ Please select some files with contiguous years in order to aggregate.")),
                     self.aggregation_options,
-                    self.weight_map_dropdown,
-                    # self.weight_map_upload_btn,
-                    self.weight_map_clear_btn,
+                    self.weight_map_select_upload,
                     self.aggregate_btn,
                     # self.aggregated_download_btn,
                 ]))
@@ -266,8 +264,6 @@ class View:
         return self.section("Map", content)
 
     def clear_uploaded_weightmap(self):
-        # For ipywidgets 8.0.0, use self.weight_map_upload.value = []
-        # For more, see https://github.com/jupyter-widgets/ipywidgets/issues/2653
         self.weight_map_upload.value.clear()
         self.weight_map_upload._counter = 0
 

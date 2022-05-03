@@ -37,6 +37,8 @@ class Model:
 
         self.start_year = ComputedProp()
         self.end_year = ComputedProp()
+        self.weightmap_file = ComputedProp()
+        self.use_weightmap = ComputedProp()
 
         ########################
         #  Data Visualization  #
@@ -53,10 +55,6 @@ class Model:
         self.selected_country = SyncedProp(value=None) #
         self.selected_info = ComputedProp()
         self.summary_info = ComputedProp()
-        # self.choro_data_max = ComputedProp()
-        # self.choro_data_min = ComputedProp()
-        # self.choro_data_stdev = ComputedProp()
-        # self.choro_data_quantiles = ComputedProp()
 
         logger.info('Data load completed')
 

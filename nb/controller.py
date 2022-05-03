@@ -67,9 +67,12 @@ class Controller():
                 >> (lambda files: can_combine(files))
 
             SyncedProp() \
-                << (model.selected_combinable, dict(trans=lambda b: not b)) \
+                << ~model.selected_combinable \
                 >> (view.selection_next_btn, dict(prop='disabled', sync=True)) \
+                >> (view.aggregate_btn, dict(prop='disabled', sync=True)) \
+                >> (view.aggregation_options, dict(prop='disabled', sync=True)) \
                 >> (view.aggregate_btn, dict(prop='disabled', sync=True))
+                # >> (view.weight_map_select_upload, dict(prop='disabled', sync=True)) \
 
             ######################
             #  Data Aggregation  #
@@ -82,6 +85,14 @@ class Controller():
             model.end_year \
                 << (model.selected_files, dict(name="files")) \
                 >> (lambda files: get_combine_info(files).get("end_year") if files else None)
+
+            model.use_weightmap \
+                << (view.aggregation_options, dict(name="op")) \
+                >> (lambda op: op == "wa")
+
+            SyncedProp() \
+                << (~model.use_weightmap | ~model.selected_combinable) \
+                >> (view.weight_map_select_upload, dict(prop='disabled', sync=True))
 
             view.aggregate_btn.on_click(self.cb_aggregate)
 
@@ -101,28 +112,12 @@ class Controller():
                 << (model.choro_data, dict(name="choro")) \
                 >> (lambda choro: get_summary_info(choro.values()))
 
-#             model.choro_data_max \
-#                 << (model.choro_data, dict(name="choro")) \
-#                 >> (lambda choro: max(choro.values()))
-
-#             model.choro_data_min \
-#                 << (model.choro_data, dict(name="choro")) \
-#                 >> (lambda choro: min(choro.values()))
-
-#             model.choro_data_stdev \
-#                 << (model.choro_data, dict(name="choro")) \
-#                 >> (lambda choro: stdev(choro.values()))
-
-#             model.choro_data_quantiles \
-#                 << (model.choro_data, dict(name="choro")) \
-#                 >> (lambda choro: quantiles(choro.values()))
-
             # add callback to map
             view.map.on_interaction(self.cb_set_coordinates)
 
             model.choro_data \
-                << (view.zoom_slider, dict(name='selected_year')) \
-                << (model.prod_data, dict(name='prod_data')) \
+                << (view.zoom_slider, dict(name='selected_year', sync=False)) \
+                << (model.prod_data, dict(name='prod_data', sync=False)) \
                 >> (lambda prod_data, selected_year: prod_data.get(selected_year, None))
 
             SyncedProp() \
@@ -167,6 +162,18 @@ class Controller():
             # record the coordinate clicked
             model.coordinates = kwargs['coordinates']
 
+    def cb_upload_weightmap(self, _):
+        if not view.weight_map_upload.value:
+            logger.error("No file uploaded")
+            return
+        uploaded = next(iter(view.weight_map_upload.value.values()))
+        name = uploaded['metadata']['name']
+        logger.info(f"Uploading {name}...")
+        content = uploaded['content']
+        with open(os.path.join(Const.WEIGHT_MAP_UPLOAD_DIR, name), 'wb') as f:
+            f.write(content)
+        logger.info(f"File uploaded to {os.path.join(Const.WEIGHT_MAP_UPLOAD_DIR, name)}")
+
     def cb_aggregate(self, _):
         # input_file = "data/epic_hadgem2-es_hist_ssp2_co2_firr_yield_soy_annual_1980_2010.nc4"
         send_notification("Aggregating data...")
@@ -181,7 +188,7 @@ class Controller():
         input_file = info['file_name']
 
         aggregation_option = view.aggregation_options.value
-        weightmap_file = os.path.join(Const.WEIGHT_MAP_DIR, view.weight_map_dropdown.value)
+        weightmap_file = view.weight_map_select_upload.value
         start_year = model.start_year.value
         end_year = model.end_year.value
         if start_year is None:
