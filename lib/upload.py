@@ -1,4 +1,4 @@
-from ipywidgets import FileUpload, Button
+from ipywidgets import FileUpload, Button, Widget, Box
 from .prop import ComputedProp, SyncedProp
 import os
 
@@ -8,18 +8,20 @@ def D(msg):
     if DEBUG:
         print(msg)
 
-class Upload:
+class Upload(Box):
     def __init__(self, upload_dir=".", upload_fname=None, overwrite=False):
         """ upload_fname will be the name of the uploaded file, if None, use the original file name """
         # todo: check uploaded_fname doesn't exist?
+        self._fu = FileUpload()
+        self._clear_btn = Button(description="Clear")
+        self._confirm_btn = Button(description="Confirm")
+        super().__init__(children=[self._fu, self._clear_btn, self._confirm_btn])
+
         self._upload_dir = upload_dir
         self._upload_fname = upload_fname
         self._overwrite = overwrite
 
-        self._fu = FileUpload()
-        self._clear_btn = Button(description="Clear")
         self._clear_btn.on_click(lambda _: self._clear_pending_file())
-        self._confirm_btn = Button(description="Confirm")
         self._confirm_btn.on_click(lambda _: self._confirm_upload())
         self._has_pending_file = ComputedProp(use_none=True) << (self._fu, dict(name='v', sync=True)) >> (lambda v: bool(v))
         self._last_uploaded_file = None
@@ -52,17 +54,17 @@ class Upload:
         with open(dest_path, "wb") as f:
             f.write(uploaded['content'])
         os.utime(dest_path, (lmod, lmod))
-        self._last_uploaded_file = dest_path
+        self._last_uploaded_file = dest_path # is this needed? use callback exclusively?
         self._clear_pending_file()
 
     def _clear_pending_file(self):
         self._fu._counter = 0
         self._fu.set_trait('value', {})
 
-    def _ipython_display_(self):
-        display(self._fu)
-        display(self._clear_btn)
-        display(self._confirm_btn)
+    # def _ipython_display_(self):
+    #     display(self._fu)
+    #     display(self._clear_btn)
+    #     display(self._confirm_btn)
 
     def on_upload(self, cb):
         """ cb should accept the full path of the uploaded file """
