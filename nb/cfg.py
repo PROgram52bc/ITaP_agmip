@@ -92,29 +92,58 @@ class Const:
             "wheat", ]}
     ]
 
+    # TODO: refactor those maps <2022-05-03, David Deng> #
+
+    LABEL_TO_KEY = {
+        "Crop Model": "model",
+        "GCM": "gcm",
+        "RCP": "rcp",
+        "SSP": "ssp",
+        "CO2": "co2",
+        "IRR": "irr",
+        "Crop": "crop",
+    }
+
     FULL_CROP_NAME = {
-        "mai": "maize",
-        "soy": "soybean",
-        "whe": "wheat",
-        "ric": "rice",
-        "mgr": "managed_grass",
-        "rap": "rapeseed",
         "bar": "barley",
+        "mai": "maize",
+        "mgr": "managed_grass",
         "mil": "millet",
+        "rap": "rapeseed",
+        "ric": "rice",
         "sor": "sorghum",
-        "sug": "sugarcane",
+        "soy": "soybean",
         "sgb": "sugarbeet",
+        "sug": "sugarcane",
         "tea": "tea",
+        "whe": "wheat",
+    }
+
+    HUMAN_CROP_NAME = {
+        # ???: "Barley"
+        "maize": "Maize",
+        "managed_grass": "Managed grass",
+        "millet": "Millet",
+        "others": "Others",
+        "rapeseed": "Rapeseed",
+        "rice": "Rice",
+        "sorghum": "Sorghum",
+        "soy": "Soy",
+        # ???: "Sugar beet"
+        "sugarcane": "Sugarcane",
+        "tea": "Tea",
+        "wheat": "Wheat",
     }
 
     # Selection tab
+    RAW_DATA_DIR = 'data/raw/'
     COMBINED_CACHE_DIR = 'cache/combined/'
     AGGREGATED_CACHE_DIR = 'cache/aggregated/'
     WEIGHT_MAP_DIR = 'examples/weightmap/'
-    WEIGHT_MAP_UPLOAD_DIR = 'cache/weightmaps'
+    WEIGHT_MAP_UPLOAD_DIR = 'cache/weightmaps/'
 
     REGION_MAP_DIR = 'examples/regionmap/'
-    REGION_MAP_UPLOAD_DIR = 'cache/regionmaps'
+    REGION_MAP_UPLOAD_DIR = 'cache/regionmaps/'
 
     AGGREGATION_OPTIONS = [
         ("Regional Production (in metric tons)", 'pr'),
@@ -129,6 +158,51 @@ class Const:
         'st': 'mean',
         'wa': 'w.ave.yield',
     }
+
+    REFERENCES = """References
+
+
+Elliott, J., C. Mueller, D. Deryng, J. Chryssanthacopoulos, K. J. Boote, M. Buechner, I. Foster, et al. 2014. "The Global Gridded Crop Model Intercomparison: Data and Modeling Protocols for Phase 1 (v1.0)." Geosci. Model Dev. Discuss. 7 (4): 4383-4427.
+
+
+Rosenzweig, C., J. Elliott, D. Deryng, A.C. Ruane, C. Mueller, A. Arneth, K.J. Boote, C. Folberth, M. Glotter, N. Khabarov, K. Neumann, F. Piontek, T.A.M. Pugh, E. Schmid, E. Stehfest, H. Yang, and J.W. Jones. 2014. "Assessing agricultural risks of climate change in the 21st century in a global gridded crop model intercomparison." Proceedings of the National Academy of Sciences 111:3268-3273.
+
+
+Villoria N.B, J. Elliot , C. Mueller, J. Shin, L. Zhao. C. Song. (2015). Rapid aggregation of globally gridded crop model outputs to facilitate cross-disciplinary analysis of climate change impacts in agriculture. Data tool accessible at url: https://mygeohub.org/resources/agmip
+
+
+For definitions, descriptions, and limitations of these data please refer to Rosenzweig et al (2014) PNAS 111(9): 3268-3273.
+http://www.pnas.org/content/111/9/3268.full
+
+
+Different applications of these data can be found at:
+
+Rosenzweig, C. et al. (2014). Assessing agricultural risks of climate change in the 21st century in a global gridded crop model intercomparison. Proceedings of the National Academy of Sciences, 111 (9): 3268-3273.
+
+Elliott, J. et al. (2014). Constraints and potentials of future irrigation water availability on global agricultural production under climate change. Proceedings of the National Academy of Sciences, 111 (9): 3239-3244.
+
+Mueller, Christoph, and Richard D. Robertson. "Projecting future crop productivity for global economic modeling." Agricultural Economics 45.1 (2014): 37-50.
+
+Nelson, J. et al. (2014). Climate change effects on agriculture: Economic responses to biophysical shocks. Proceedings of the National Academy of Sciences, 111 (9):  3274-3279.
+
+
+Links to the models used in the Phase I of the Global Gridded Crop Model Intercomparison (GGCMI) project:
+Crop Models
+EPIC         http://epicapex.tamu.edu/epic/
+GEPIC        http://www.envirogrids.net/Materials/GEPIC/Workshop/1-Introduction/index.html
+pDSSAT       https://rdcep.org/research/pdssat-productivity-and-climate-impact-models-0
+LPJmL        https://www.pik-potsdam.de/research/projects/activities/biosphere-water-modelling/lpjml
+IMAGE-LEITAP http://www.pbl.nl/en/publications/2006/Integratedmodellingofglobalenvironmentalchange.AnoverviewofIMAGE2.4
+PEGASUS      http://onlinelibrary.wiley.com/doi/10.1029/2009GB003765/abstract
+LPJ-GUESS    http://iis4.nateko.lu.se/lpj-guess/
+
+GCMs
+HadGEM2-ES     https://verc.enes.org/models/earthsystem-models/metoffice-hadley-centre/hadgem2-es
+IPSL-CM5A-LR   https://verc.enes.org/models/earthsystem-models/ipsl/ipslesm
+MIROC-ESM-CHEM http://www.geosci-model-dev.net/4/845/2011/gmd-4-845-2011.pdf
+GFDL-ESM2M     http://www.gfdl.noaa.gov/earth-system-model
+NorESM1-M      http://www.geosci-model-dev.net/6/687/2013/gmd-6-687-2013.html
+"""
 
 class AppendFileLineToLog(logging.Filter):
     """Custom logging format"""

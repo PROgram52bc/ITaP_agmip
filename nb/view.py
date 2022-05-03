@@ -6,7 +6,7 @@ from ipyleaflet import Map, Marker, Popup, WidgetControl, Choropleth
 from IPython.display import HTML, display, clear_output, FileLink
 import logging
 from branca.colormap import linear
-from lib.utils import get_dir_content, displayable, DownloadButton, get_colormap, is_float, get_file_content, display_with_style, zipped, conditional_widget
+from lib.utils import get_dir_content, displayable, DownloadButton, get_colormap, is_float, get_file_content, display_with_style, zipped, conditional_widget, get_citation, remap_dict_keys
 from lib.upload import SelectOrUpload
 
 
@@ -184,7 +184,7 @@ class View:
                 self.selection_previous_btn,
                 self.raw_download_btn,
                 self.selection_next_btn,
-            )
+            ),
         ]
 
         return self.section("Data", content)
@@ -216,6 +216,21 @@ class View:
                                                        upload_dir=Const.WEIGHT_MAP_UPLOAD_DIR,
                                                        overwrite=True, label="Weight Map")
 
+        self.citation_btn = DownloadButton(description="Documentation", filename="citations.txt", contents=lambda: (get_citation(
+            { 'start_year': model.start_year.value,
+             'end_year': model.end_year.value,
+             **remap_dict_keys(model.radio_selections_info.value, Const.LABEL_TO_KEY) },
+            { 'option': self.aggregation_options.value }
+        )+Const.REFERENCES).encode('utf-8'))
+
+        self.aggregation_previous_btn = self.get_navigation_button("prev", "Previous")
+        self.aggregation_next_btn = self.get_navigation_button("next", "Next")
+        self.aggregation_download_btn = DownloadButton(
+            # TODO: name the zip file <2022-04-12, David Deng> #
+            filename="unnamed.zip",
+            contents=lambda: zipped(model.selected_files.value),
+            description='Download')
+
         content = []
         content.append(
             self.section(
@@ -228,10 +243,16 @@ class View:
                             displayable(model.end_year, "End year"),
                         ]),
                         widgets.HTML("⚠️ Please select some files with contiguous years in order to aggregate.")),
-                    self.aggregation_options,
                     self.region_map_select_upload,
+                    self.aggregation_options,
                     self.weight_map_select_upload,
-                    self.aggregate_btn,
+                    self.button_group(
+                        self.aggregation_previous_btn,
+                        self.aggregate_btn,
+                        self.aggregation_download_btn,
+                        self.citation_btn,
+                        self.aggregation_next_btn,
+                    ),
                     # self.aggregated_download_btn,
                 ]))
 
@@ -261,13 +282,12 @@ class View:
 
         content = [
             self.map,
-            widgets.HBox([ self.selected_info, self.summary_info ], layout={'justify-content': 'space-between'})
+            widgets.HBox([
+                displayable(model.radio_selections_info, "Crop Model Selection"),
+                self.selected_info, self.summary_info ], layout={'justify-content': 'space-between'}),
+            self.get_navigation_button("prev", "Previous"),
         ]
         return self.section("Map", content)
-
-    def clear_uploaded_weightmap(self):
-        self.weight_map_upload.value.clear()
-        self.weight_map_upload._counter = 0
 
     def refresh_map_colormap(self):
         # replace the colormap legend control
@@ -276,7 +296,6 @@ class View:
         cm.append_display_data(self.colormap)
         self.cmcontrol = WidgetControl(widget=cm, position="topright", transparent_bg=True)
         self.map.add_control(self.cmcontrol)
-
 
     def refresh_map_choro(self, choro_data):
         data = list(choro_data.values())

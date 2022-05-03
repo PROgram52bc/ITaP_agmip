@@ -104,14 +104,16 @@ class SelectOrUpload(VBox):
         self.value = Unicode()
         SyncedProp() << self.target_file >> self
 
-        self._disabled = SyncedProp(value=False) \
-            @ (self, dict(prop='disabled')) \
-            >> (self._upload, dict(prop='disabled')) \
-            >> (self._select, dict(prop='disabled'))
 
         # button to switch back to selection mode
         self._use_select_btn = Button(description="Use Existing Files")
         self._use_select_btn.on_click(self._cb_use_upload_false)
+
+        self._disabled = SyncedProp(value=False) \
+            @ (self, dict(prop='disabled')) \
+            >> (self._upload, dict(prop='disabled')) \
+            >> (self._select, dict(prop='disabled')) \
+            >> (self._use_select_btn, dict(prop='disabled'))
 
         super().__init__(children=[
             displayable(self.target_file, label),

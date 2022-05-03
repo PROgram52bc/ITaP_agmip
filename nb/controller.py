@@ -35,18 +35,20 @@ class Controller():
             for radio in view.radios:
                 model.radio_selections[radio.description] @ radio
 
-            # model.data_file_path
-            for segment in model.radio_selections.values():
-                model.data_file_path << segment
+            # model.data_file_path, model.radio_selections_info
+            for category, prop in model.radio_selections.items():
+                model.radio_selections_info << (prop, dict(name=category))
+                model.data_file_path << prop # calculating data path doesn't need the name
+            # TODO: refactor the method below into a lambda <2022-05-03, David Deng> #
             model.data_file_path >> model.get_data_file_path
-            model.data_file_path.resync()
+            model.radio_selections_info >> (lambda **kwargs: kwargs) # output a dictionary
 
-            model.folder_file_selections \
+            model.folder_file_selection_options \
                 << (model.data_file_path, dict(name="path")) \
                 >> (lambda path: get_dir_content(path))
 
             SyncedProp() \
-                << (model.folder_file_selections, dict(sync=True)) \
+                << (model.folder_file_selection_options, dict(sync=True)) \
                 >> (view.folder_file_multi_select, dict(prop='options', sync=True))
 
             model.select_all \
@@ -60,7 +62,6 @@ class Controller():
                 << (model.select_all, dict(name="select_all")) \
                 >> (lambda path, select_all, selected_files, all_files:
                     [ os.path.join(path, file) for file in (all_files if select_all else selected_files) ])
-            model.selected_files.resync()
 
             model.selected_combinable \
                 << (model.selected_files, dict(name='files')) \
@@ -73,6 +74,13 @@ class Controller():
                 >> (view.aggregation_options, dict(prop='disabled', sync=True)) \
                 >> (view.aggregate_btn, dict(prop='disabled', sync=True)) \
                 >> (view.region_map_select_upload, dict(prop='disabled', sync=True))
+
+            model.selection_info \
+                << (model.selected_combinable, dict(name="combinable")) \
+                >> (lambda combinable: {'combinable': combinable})
+
+            model.data_file_path >> model.get_data_file_path
+
 
             ######################
             #  Data Aggregation  #
@@ -161,18 +169,6 @@ class Controller():
         if (kwargs['type'] == 'preclick'):
             # record the coordinate clicked
             model.coordinates = kwargs['coordinates']
-
-    def cb_upload_weightmap(self, _):
-        if not view.weight_map_upload.value:
-            logger.error("No file uploaded")
-            return
-        uploaded = next(iter(view.weight_map_upload.value.values()))
-        name = uploaded['metadata']['name']
-        logger.info(f"Uploading {name}...")
-        content = uploaded['content']
-        with open(os.path.join(Const.WEIGHT_MAP_UPLOAD_DIR, name), 'wb') as f:
-            f.write(content)
-        logger.info(f"File uploaded to {os.path.join(Const.WEIGHT_MAP_UPLOAD_DIR, name)}")
 
     def cb_aggregate(self, _):
         # input_file = "data/epic_hadgem2-es_hist_ssp2_co2_firr_yield_soy_annual_1980_2010.nc4"
