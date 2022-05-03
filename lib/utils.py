@@ -9,36 +9,13 @@ import re
 import io
 from zipfile import ZipFile
 from tabulate import tabulate
-from lib.prop import conditional_widget
+from lib.prop import conditional_widget, displayable, display_with_style
 
 # For DownloadButton
 import base64
 import hashlib
 from typing import Callable
 from IPython.display import HTML
-
-def display_with_style(obj, label=None):
-    """Display obj and label with styles
-    """
-    w = widgets.HTML()
-    # TODO: add classes for styles <2022-03-31, David Deng> #
-    if isinstance(obj, list):
-        obj = tabulate([["", item] for item in obj], tablefmt="html")
-        w.add_class("hide-first-column")
-    elif isinstance(obj, dict):
-        obj = tabulate([[k,v] for k,v in obj.items()], tablefmt="html")
-
-    w.add_class("fancy-table")
-    if label:
-        w.value = f"<p><b>{label}</b>: {obj}</p>"
-    else:
-        w.value = f"<p>{obj}</p>"
-    display(w)
-
-def displayable(prop, label=None):
-    def f(obj):
-        display_with_style(obj, label)
-    return widgets.interactive_output(f, {"obj": prop})
 
 
 def is_float(n):

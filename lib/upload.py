@@ -1,5 +1,7 @@
-from ipywidgets import FileUpload, Button, Widget, Box
-from .prop import ComputedProp, SyncedProp
+from ipywidgets import FileUpload, Dropdown, Button, VBox, HBox
+from traitlets import Unicode
+from .prop import ComputedProp, SyncedProp, Prop, conditional_widget, displayable
+from .utils import get_dir_content
 import os
 
 DEBUG=1
@@ -8,10 +10,9 @@ def D(msg):
     if DEBUG:
         print(msg)
 
-class Upload(Box):
+class Upload(VBox):
     def __init__(self, upload_dir=".", upload_fname=None, overwrite=False):
         """ upload_fname will be the name of the uploaded file, if None, use the original file name """
-        # todo: check uploaded_fname doesn't exist?
         self._fu = FileUpload()
         self._clear_btn = Button(description="Clear")
         self._confirm_btn = Button(description="Confirm")
@@ -56,6 +57,8 @@ class Upload(Box):
         os.utime(dest_path, (lmod, lmod))
         self._last_uploaded_file = dest_path # is this needed? use callback exclusively?
         self._clear_pending_file()
+        if self._upload_cb is not None:
+            self._upload_cb({'path': dest_path})
 
     def _clear_pending_file(self):
         self._fu._counter = 0
@@ -67,10 +70,50 @@ class Upload(Box):
     #     display(self._confirm_btn)
 
     def on_upload(self, cb):
-        """ cb should accept the full path of the uploaded file """
-        # todo: verify cb is callable
+        """ cb accepts a dictionary with key 'path', pointing to the full path of the uploaded file """
+        assert callable(cb)
         self._upload_cb = cb
 
     def on_error(self, cb):
-        """ cb accepts a dictionary including the error message """
+        """ cb accepts a dictionary with key 'message', indicating the error message """
+        assert callable(cb)
         self._error_cb = cb
+
+
+class SelectOrUpload(VBox):
+    def __init__(self, select_dir=".", upload_dir=".", upload_fname=None, overwrite=False):
+        """ upload_fname will be the name of the uploaded file, if None, use the original file name """
+        # assume content is static
+        self._select = Dropdown(options=get_dir_content(select_dir))
+        self._upload = Upload(upload_dir=upload_dir, upload_fname=upload_fname, overwrite=overwrite)
+
+        # whether to use the uploaded file or the selected file
+        self.use_upload = Prop(value=False)
+        self.uploaded_file = None
+
+        self.target_file = ComputedProp() \
+            << (self.use_upload, dict(name='up')) \
+            << self._select \
+            >> (lambda up: self.uploaded_file if up else self._select.value)
+
+        # button to switch back to selection mode
+        self._use_select_btn = Button(description="Use Existing Files")
+        self._use_select_btn.on_click(self._cb_use_upload_false)
+
+        super().__init__(children=[
+            displayable(self.target_file, "Selected"),
+            conditional_widget(self.use_upload,
+                               self._use_select_btn,
+                               self._select),
+            self._upload])
+
+        self._upload.on_upload(self._cb_use_upload_true)
+
+    def _cb_use_upload_true(self, payload):
+        self.uploaded_file = payload['path']
+        self.use_upload.value = True
+
+    def _cb_use_upload_false(self, _):
+        self.uploaded_file = None
+        self.use_upload.value = False
+

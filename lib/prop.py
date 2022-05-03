@@ -319,6 +319,10 @@ def conditional_widget(cond, widget_if, widget_else=None):
     """ An interactive widget that only gets displayed when cond evaluates to True """
     # TODO: remove the padding? <2022-04-13, David Deng> #
     out = widgets.Output()
+    out.add_class("no-subarea-padding")
+    # .no-subarea-padding .output_subarea {
+    #     padding: 0 !important;
+    # }
     def observer(_):
         with out:
             clear_output()
@@ -338,6 +342,9 @@ def display_with_style(obj, label=None):
     if isinstance(obj, list):
         obj = tabulate([["", item] for item in obj], tablefmt="html")
         w.add_class("hide-first-column")
+        # .hide-first-column td:first-child {
+        #     display: none;
+        # }
     elif isinstance(obj, dict):
         obj = tabulate([[k,v] for k,v in obj.items()], tablefmt="html")
 

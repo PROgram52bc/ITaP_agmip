@@ -11,7 +11,7 @@ import subprocess
 from lib import SyncedProp
 import os
 import re
-from nb.utils import get_yield_variable, get_colormap, get_dir_content, \
+from lib.utils import get_yield_variable, get_colormap, get_dir_content, \
     can_combine, get_combine_info, combine_nc4, get_summary_info
 import netCDF4
 import json
