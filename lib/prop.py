@@ -336,7 +336,7 @@ def conditional_widget(cond, widget_if, widget_else=None):
     observer(None)
     return out
 
-def display_with_style(obj, label=None):
+def display_with_style(obj):
     """Display obj and label with styles
     """
     w = widgets.HTML()
@@ -351,13 +351,10 @@ def display_with_style(obj, label=None):
         obj = tabulate([[k,v] for k,v in obj.items()], tablefmt="html")
 
     w.add_class("fancy-table")
-    if label:
-        w.value = f"<p><b>{label}</b>: {obj}</p>"
-    else:
-        w.value = f"<p>{obj}</p>"
+    w.value = f"<p>{obj}</p>"
     display(w)
 
-def displayable(prop, label=None):
+def displayable(prop):
     def f(obj):
-        display_with_style(obj, label)
+        display_with_style(obj)
     return widgets.interactive_output(f, {"obj": prop})

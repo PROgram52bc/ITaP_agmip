@@ -46,8 +46,8 @@ class Model:
         # 'start_year': ..., None if not combinable
         # 'end_year': ..., None if not combinable
         # 'model': {...} based on radio selection
+        # 'agmip_files': [..., ...]
         self.selection_info = ComputedProp()
-
 
         ######################
         #  Data Aggregation  #
@@ -60,6 +60,8 @@ class Model:
 
         # true only when the Weighted-Average aggregation option is selected
         self.use_weightmap = ComputedProp()
+
+        self.aggregation_info = ComputedProp()
 
         ########################
         #  Data Visualization  #

@@ -6,7 +6,8 @@ from ipyleaflet import Map, Marker, Popup, WidgetControl, Choropleth
 from IPython.display import HTML, display, clear_output, FileLink
 import logging
 from branca.colormap import linear
-from lib.utils import get_dir_content, displayable, DownloadButton, get_colormap, is_float, get_file_content, display_with_style, zipped, conditional_widget, get_citation, remap_dict_keys
+from lib.prop import displayable
+from lib.utils import get_dir_content, DownloadButton, get_colormap, is_float, zipped, conditional_widget, get_citation, remap_dict_keys, labeled_widget
 from lib.upload import SelectOrUpload
 
 
@@ -176,7 +177,7 @@ class View:
             # displayable(model.data_file_path, "data file path"),
             self.select_all,
             self.folder_file_multi_select,
-            displayable(model.selected_files, "Selected files"),
+            labeled_widget(displayable(model.selected_files), "Selected files"),
             conditional_widget(
                 ~model.selected_combinable & model.selected_files,
                 widgets.HTML("⚠️ Please select files with contiguous years in order to proceed.")),
@@ -231,18 +232,18 @@ class View:
             contents=lambda: zipped(model.selected_files.value),
             description='Download')
 
-        content = []
-        content.append(
+        content = [
             self.section(
-                "Data Aggregation", [
+                "Info", [
                     conditional_widget(
                         model.selected_combinable,
                         widgets.VBox([
-                            displayable(model.selected_files, "Agmip files"),
-                            displayable(model.start_year, "Start year"),
-                            displayable(model.end_year, "End year"),
+                            labeled_widget(displayable(model.selection_info), "Data Selection Info"),
                         ]),
                         widgets.HTML("⚠️ Please select some files with contiguous years in order to aggregate.")),
+                ]),
+            self.section(
+                "Data Aggregation", [
                     self.region_map_select_upload,
                     self.aggregation_options,
                     self.weight_map_select_upload,
@@ -254,7 +255,8 @@ class View:
                         self.aggregation_next_btn,
                     ),
                     # self.aggregated_download_btn,
-                ]))
+                ]),
+        ]
 
         return widgets.VBox(content)
 
@@ -277,13 +279,13 @@ class View:
         zscontrol = WidgetControl(widget=self.zoom_slider, position="bottomleft", transparent_bg=True)
         self.map.add_control(zscontrol)
 
-        self.selected_info = displayable(model.selected_info, "Selected Country Info")
-        self.summary_info = displayable(model.summary_info, "Summary Statistics")
+        self.selected_info = labeled_widget(displayable(model.selected_info), "Selected Country Info")
+        self.summary_info = labeled_widget(displayable(model.summary_info), "Summary Statistics")
 
         content = [
             self.map,
             widgets.HBox([
-                displayable(model.radio_selections_info, "Crop Model Selection"),
+                labeled_widget(displayable(model.radio_selections_info), "Crop Model Selection"),
                 self.selected_info, self.summary_info ], layout={'justify-content': 'space-between'}),
             self.get_navigation_button("prev", "Previous"),
         ]

@@ -1,7 +1,7 @@
 from ipywidgets import FileUpload, Dropdown, Button, VBox, HBox
 from traitlets import Unicode, Bool
 from .prop import ComputedProp, SyncedProp, Prop, conditional_widget, displayable
-from .utils import get_dir_content
+from .utils import get_dir_content, labeled_widget
 import os
 
 DEBUG=0
@@ -116,7 +116,7 @@ class SelectOrUpload(VBox):
             >> (self._use_select_btn, dict(prop='disabled'))
 
         super().__init__(children=[
-            displayable(self.target_file, label),
+            labeled_widget(displayable(self.target_file), label, 4),
             conditional_widget(self.use_upload,
                                self._use_select_btn,
                                self._select),

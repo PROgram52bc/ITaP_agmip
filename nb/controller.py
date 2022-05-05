@@ -73,14 +73,20 @@ class Controller():
                 >> (view.aggregate_btn, dict(prop='disabled', sync=True)) \
                 >> (view.aggregation_options, dict(prop='disabled', sync=True)) \
                 >> (view.aggregate_btn, dict(prop='disabled', sync=True)) \
-                >> (view.region_map_select_upload, dict(prop='disabled', sync=True))
+                >> (view.region_map_select_upload, dict(prop='disabled', sync=True)) \
+
+            # TODO: bind this to a variable indicating cache is generated <2022-05-04, David Deng> #
+            SyncedProp() \
+                << ~model.selected_combinable \
+                >> (view.aggregation_next_btn, dict(prop='disabled', sync=True)) \
+                >> (view.aggregation_download_btn, dict(prop='disabled', sync=True)) \
+                >> (view.citation_btn, dict(prop='disabled', sync=True))
 
             model.selection_info \
-                << (model.selected_combinable, dict(name="combinable")) \
-                >> (lambda combinable: {'combinable': combinable})
-
-            model.data_file_path >> model.get_data_file_path
-
+                << (model.start_year, dict(name="start")) \
+                << (model.end_year, dict(name="end")) \
+                << (model.radio_selections_info, dict(name="model_info")) \
+                >> (lambda start, end, model_info: {'Year Range': f"{start}-{end}", **model_info})
 
             ######################
             #  Data Aggregation  #
