@@ -104,9 +104,10 @@ class Controller():
                 << (view.aggregation_options, dict(name="op")) \
                 >> (lambda op: op == "wa")
 
-            SyncedProp() \
-                << (~model.use_weightmap | ~model.selected_combinable) \
-                >> (view.weight_map_select_upload, dict(prop='disabled', sync=True))
+            # just hide it using conditional variable
+            # SyncedProp() \
+            #     << (~model.use_weightmap | ~model.selected_combinable) \
+            #     >> (view.weight_map_select_upload, dict(prop='disabled', sync=True))
 
             view.aggregate_btn.on_click(self.cb_aggregate)
 

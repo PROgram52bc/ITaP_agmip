@@ -1,7 +1,7 @@
 from ipywidgets import FileUpload, Dropdown, Button, VBox, HBox
 from traitlets import Unicode, Bool
 from .prop import ComputedProp, SyncedProp, Prop, conditional_widget, displayable
-from .utils import get_dir_content, labeled_widget
+from .utils import get_dir_content
 import os
 
 DEBUG=0
@@ -85,7 +85,7 @@ class Upload(HBox):
 class SelectOrUpload(VBox):
     disabled = Bool(False, help="Enable or disable user changes.")
 
-    def __init__(self, select_dir=".", upload_dir=".", upload_fname=None, overwrite=False, label="Selected"):
+    def __init__(self, select_dir=".", upload_dir=".", upload_fname=None, overwrite=False):
         """ upload_fname will be the name of the uploaded file, if None, use the original file name """
         # assume content is static
         self._select = Dropdown(options=get_dir_content(select_dir))
@@ -99,7 +99,7 @@ class SelectOrUpload(VBox):
             << (self.use_upload, dict(name='use_upload')) \
             << (self.uploaded_file, dict(name='upl')) \
             << (self._select, dict(name="sel")) \
-            >> (lambda use_upload, upl, sel: upl if use_upload else os.path.join(select_dir, sel)) # upl is already the absolute path 
+            >> (lambda use_upload, upl, sel: upl if use_upload else os.path.join(select_dir, sel)) # upl is already the absolute path
 
         self.value = Unicode()
         SyncedProp() << self.target_file >> self
@@ -115,12 +115,15 @@ class SelectOrUpload(VBox):
             >> (self._select, dict(prop='disabled')) \
             >> (self._use_select_btn, dict(prop='disabled'))
 
-        super().__init__(children=[
-            labeled_widget(displayable(self.target_file), label, 4),
+        children = [
+            displayable(self.target_file),
             conditional_widget(self.use_upload,
                                self._use_select_btn,
                                self._select),
-            self._upload])
+            self._upload
+        ]
+
+        super().__init__(children=children)
 
         self._upload.on_upload(self._cb_use_upload_true)
 

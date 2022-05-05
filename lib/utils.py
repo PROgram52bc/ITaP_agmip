@@ -241,6 +241,18 @@ def labeled_widget(w, title, level=3):
     """ add a heading to the widget """
     return widgets.VBox([ widgets.HTML(f"<h{level}>{title}</h{level}>"), w ])
 
+def hbox_scattered(*items):
+    """Create a horizontal list of items
+
+    :*items: the list of items
+    :returns: TODO
+
+    """
+    ret = widgets.HBox(children=items)
+    ret.add_class("scatter_content")
+    return ret
+
+
 # https://stackoverflow.com/questions/61708701/how-to-download-a-file-using-ipywidget-button
 class DownloadButton(widgets.Button):
     """Download button with dynamic content

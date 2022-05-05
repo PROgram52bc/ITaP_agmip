@@ -7,7 +7,7 @@ from IPython.display import HTML, display, clear_output, FileLink
 import logging
 from branca.colormap import linear
 from lib.prop import displayable
-from lib.utils import get_dir_content, DownloadButton, get_colormap, is_float, zipped, conditional_widget, get_citation, remap_dict_keys, labeled_widget
+from lib.utils import get_dir_content, DownloadButton, get_colormap, is_float, zipped, conditional_widget, get_citation, remap_dict_keys, labeled_widget, hbox_scattered
 from lib.upload import SelectOrUpload
 
 
@@ -116,19 +116,9 @@ class View:
         ret.set_title(0, title)
         return ret
 
-    def button_group(self, *buttons):
-        """Create a horizontal list of buttons
-
-        :*buttons: the list of buttons
-        :returns: TODO
-
-        """
-        btns = widgets.HBox(children=buttons)
-        btns.add_class("button_group")
-        return btns
-
     def welcome_content(self):
         '''Create widgets for introductory tab content'''
+        # TODO: refactor USING_TEXT with displayable <2022-05-04, David Deng> #
         return self.section('Using This App', [
             widgets.HTML(Const.USING_TEXT),
             self.get_navigation_button("next", "Get Started")
@@ -145,14 +135,14 @@ class View:
         ) for category in Const.DATA_CATEGORIES]
 
         # Hard-coded layout
-        radio_layout = widgets.GridspecLayout(5, 4)
-        radio_layout[:3, 0] = self.radios[0]
-        radio_layout[:3, 1] = self.radios[1]
-        radio_layout[:3, 2] = self.radios[2]
-        radio_layout[3:, 0] = self.radios[3]
-        radio_layout[3:, 1] = self.radios[4]
-        radio_layout[3:, 2] = self.radios[5]
-        radio_layout[:, 3] = self.radios[6]
+        self.radio_layout = widgets.GridspecLayout(5, 4)
+        self.radio_layout[:3, 0] = self.radios[0]
+        self.radio_layout[:3, 1] = self.radios[1]
+        self.radio_layout[:3, 2] = self.radios[2]
+        self.radio_layout[3:, 0] = self.radios[3]
+        self.radio_layout[3:, 1] = self.radios[4]
+        self.radio_layout[3:, 2] = self.radios[5]
+        self.radio_layout[:, 3] = self.radios[6]
 
         # download button
         self.raw_download_btn = DownloadButton(
@@ -173,22 +163,33 @@ class View:
         self.selection_next_btn = self.get_navigation_button("next", "Next")
 
         content = [
-            radio_layout,
-            # displayable(model.data_file_path, "data file path"),
-            self.select_all,
-            self.folder_file_multi_select,
-            labeled_widget(displayable(model.selected_files), "Selected files"),
-            conditional_widget(
-                ~model.selected_combinable & model.selected_files,
-                widgets.HTML("⚠️ Please select files with contiguous years in order to proceed.")),
-            self.button_group(
-                self.selection_previous_btn,
-                self.raw_download_btn,
-                self.selection_next_btn,
-            ),
+            self.section(
+                "Info", [
+                    labeled_widget(conditional_widget(model.selected_files,
+                                                      displayable(model.selected_files),
+                                                      widgets.HTML("⚠️ Nothing selected")
+                                                      ), "Selected files"),
+                ]),
+            self.section(
+                "Data Selection", [
+                    labeled_widget(self.radio_layout, "Select Category"),
+                    labeled_widget(
+                    widgets.VBox([
+                        self.select_all,
+                        self.folder_file_multi_select,
+                    ]), "Select Files"
+                    ),
+                    conditional_widget(
+                        ~model.selected_combinable & model.selected_files,
+                        widgets.HTML("⚠️ Please select files with contiguous years in order to proceed.")),
+                    hbox_scattered(
+                        self.selection_previous_btn,
+                        self.raw_download_btn,
+                        self.selection_next_btn,
+                    )]),
         ]
 
-        return self.section("Data", content)
+        return widgets.VBox(content)
 
     def aggregation_content(self):
         '''Create widgets for selection tab content'''
@@ -211,11 +212,11 @@ class View:
 
         self.region_map_select_upload = SelectOrUpload(select_dir=Const.REGION_MAP_DIR,
                                                        upload_dir=Const.REGION_MAP_UPLOAD_DIR,
-                                                       overwrite=True, label="Region Map")
+                                                       overwrite=True)
 
         self.weight_map_select_upload = SelectOrUpload(select_dir=Const.WEIGHT_MAP_DIR,
                                                        upload_dir=Const.WEIGHT_MAP_UPLOAD_DIR,
-                                                       overwrite=True, label="Weight Map")
+                                                       overwrite=True)
 
         self.citation_btn = DownloadButton(description="Documentation", filename="citations.txt", contents=lambda: (get_citation(
             { 'start_year': model.start_year.value,
@@ -244,17 +245,22 @@ class View:
                 ]),
             self.section(
                 "Data Aggregation", [
-                    self.region_map_select_upload,
-                    self.aggregation_options,
-                    self.weight_map_select_upload,
-                    self.button_group(
+                    labeled_widget(self.region_map_select_upload, "Select Region Map"),
+                    labeled_widget(
+                        widgets.VBox([
+                            self.aggregation_options,
+                            conditional_widget(
+                                model.use_weightmap & model.selected_combinable,
+                                labeled_widget(self.weight_map_select_upload, "Select Weight Map", 4))
+                        ]),
+                        "Choose Aggregation Options"),
+                    hbox_scattered(
                         self.aggregation_previous_btn,
                         self.aggregate_btn,
                         self.aggregation_download_btn,
                         self.citation_btn,
                         self.aggregation_next_btn,
                     ),
-                    # self.aggregated_download_btn,
                 ]),
         ]
 
@@ -279,17 +285,19 @@ class View:
         zscontrol = WidgetControl(widget=self.zoom_slider, position="bottomleft", transparent_bg=True)
         self.map.add_control(zscontrol)
 
-        self.selected_info = labeled_widget(displayable(model.selected_info), "Selected Country Info")
-        self.summary_info = labeled_widget(displayable(model.summary_info), "Summary Statistics")
-
         content = [
-            self.map,
-            widgets.HBox([
-                labeled_widget(displayable(model.radio_selections_info), "Crop Model Selection"),
-                self.selected_info, self.summary_info ], layout={'justify-content': 'space-between'}),
-            self.get_navigation_button("prev", "Previous"),
+            self.section("Info", [
+                hbox_scattered(
+                    labeled_widget(displayable(model.selected_info), "Selected Country Info"),
+                    labeled_widget(displayable(model.summary_info), "Summary Statistics"),
+                )
+            ]),
+            self.section("Map", [
+                self.map,
+                self.get_navigation_button("prev", "Previous"),
+            ]),
         ]
-        return self.section("Map", content)
+        return widgets.VBox(content)
 
     def refresh_map_colormap(self):
         # replace the colormap legend control
