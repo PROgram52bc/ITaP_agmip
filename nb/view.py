@@ -288,6 +288,7 @@ class View:
         content = [
             self.section("Info", [
                 hbox_scattered(
+                    labeled_widget(displayable(model.radio_selections_info), "Crop Model Selection"),
                     labeled_widget(displayable(model.selected_info), "Selected Country Info"),
                     labeled_widget(displayable(model.summary_info), "Summary Statistics"),
                 )
