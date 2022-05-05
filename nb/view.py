@@ -106,13 +106,13 @@ class View:
         logger.debug(f"Switching to tab {idx}")
         self.tabs.selected_index = idx
 
-    def section(self, title, contents):
+    def section(self, title, contents, collapsed=False):
         '''Utility method that create a collapsible widget container'''
 
         if isinstance(contents, str):
             contents = [widgets.HTML(value=contents)]
 
-        ret = widgets.Accordion(children=tuple([widgets.VBox(contents)]))
+        ret = widgets.Accordion(children=tuple([widgets.VBox(contents)]), selected_index=None if collapsed else 0)
         ret.set_title(0, title)
         return ret
 
@@ -163,13 +163,13 @@ class View:
         self.selection_next_btn = self.get_navigation_button("next", "Next")
 
         content = [
-            self.section(
-                "Info", [
-                    labeled_widget(conditional_widget(model.selected_files,
-                                                      displayable(model.selected_files),
-                                                      widgets.HTML("⚠️ Nothing selected")
-                                                      ), "Selected files"),
-                ]),
+            # self.section(
+            #     "Info", [
+            #         labeled_widget(conditional_widget(model.selected_files,
+            #                                           displayable(model.selected_files),
+            #                                           widgets.HTML("⚠️ Nothing selected")
+            #                                           ), "Selected files"),
+            #     ]),
             self.section(
                 "Data Selection", [
                     labeled_widget(self.radio_layout, "Select Category"),
@@ -236,13 +236,17 @@ class View:
         content = [
             self.section(
                 "Info", [
+                    labeled_widget(conditional_widget(model.selected_files,
+                                                      displayable(model.selected_files),
+                                                      widgets.HTML("⚠️ Nothing selected")
+                                                      ), "Selected files"),
                     conditional_widget(
                         model.selected_combinable,
                         widgets.VBox([
                             labeled_widget(displayable(model.selection_info), "Data Selection Info"),
                         ]),
                         widgets.HTML("⚠️ Please select some files with contiguous years in order to aggregate.")),
-                ]),
+                ], collapsed=True),
             self.section(
                 "Data Aggregation", [
                     labeled_widget(self.region_map_select_upload, "Select Region Map"),
@@ -292,7 +296,7 @@ class View:
                     labeled_widget(displayable(model.selected_info), "Selected Country Info"),
                     labeled_widget(displayable(model.summary_info), "Summary Statistics"),
                 )
-            ]),
+            ], collapsed=True),
             self.section("Map", [
                 self.map,
                 self.get_navigation_button("prev", "Previous"),
