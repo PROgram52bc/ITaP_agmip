@@ -79,6 +79,8 @@ class Model:
         self.selected_info = ComputedProp()
         self.summary_info = ComputedProp()
 
+        self.time_series_info = ComputedProp()
+
         logger.info('Data load completed')
 
     def get_data_file_path(self):

@@ -9,6 +9,7 @@ import ipywidgets as widgets
 from ipyleaflet import Choropleth, WidgetControl
 import subprocess
 from lib import SyncedProp
+import numpy as np
 import os
 import re
 from lib.utils import get_yield_variable, get_colormap, get_dir_content, \
@@ -120,7 +121,17 @@ class Controller():
                 << (model.choro_data, dict(name="data")) \
                 >> (lambda country, data: {
                     "Name": country,
-                    "Production": round(data.get(country, 0), 2)
+                    "Production": round(data.get(country, 0), 2),
+                })
+
+            model.time_series_info \
+                << (model.selected_country, dict(name="country")) \
+                << (model.start_year, dict(name="start")) \
+                << (model.end_year, dict(name="end")) \
+                << (model.prod_data, dict(name="full_data")) \
+                >> (lambda start, end, country, full_data: {
+                    "x": np.arange(start, end+1, 1),
+                    "y": np.array([ d[country] for d in full_data.values() ])
                 })
 
             model.summary_info \

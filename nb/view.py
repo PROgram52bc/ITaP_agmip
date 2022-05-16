@@ -8,6 +8,8 @@ import logging
 from branca.colormap import linear
 from lib.prop import displayable
 from lib.utils import get_dir_content, DownloadButton, get_colormap, is_float, zipped, conditional_widget, get_citation, remap_dict_keys, labeled_widget, hbox_scattered
+import matplotlib.pyplot as plt
+import numpy as np
 from lib.upload import SelectOrUpload
 
 
@@ -289,11 +291,26 @@ class View:
         zscontrol = WidgetControl(widget=self.zoom_slider, position="bottomleft", transparent_bg=True)
         self.map.add_control(zscontrol)
 
+        # time series graph
+        def plot(info):
+            if info is None:
+                return
+            x, y = info['x'], info['y']
+            fig, ax = plt.subplots(constrained_layout=True, figsize=(6, 4))
+            ax.grid(True)
+            line, = ax.plot(x, y)
+            plt.show()
+
+        self.time_series = widgets.interactive_output(plot, {'info': model.time_series_info})
+
         content = [
             self.section("Info", [
                 hbox_scattered(
                     labeled_widget(displayable(model.radio_selections_info), "Crop Model Selection"),
-                    labeled_widget(displayable(model.selected_info), "Selected Country Info"),
+                    widgets.VBox([
+                        labeled_widget(displayable(model.selected_info), "Selected Country Info"),
+                        labeled_widget(self.time_series, "Time Series Trend"),
+                    ]),
                     labeled_widget(displayable(model.summary_info), "Summary Statistics"),
                 )
             ], collapsed=True),
