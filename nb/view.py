@@ -223,10 +223,10 @@ class View:
 
         self.aggregation_previous_btn = self.get_navigation_button("prev", "Previous")
         self.aggregation_next_btn = self.get_navigation_button("next", "Next")
-        self.aggregation_download_btn = DownloadButton(
-            # TODO: name the zip file <2022-04-12, David Deng> #
-            filename="unnamed.zip",
-            contents=lambda: zipped(model.selected_files.value),
+        # TODO: disable the button based on whether there is cache, read file from cache <2022-05-17, David Deng> #
+        self.aggregated_download_btn = DownloadButton(
+            filename="unnamed.csv",
+            contents=lambda: open("out.csv", "rb").read(),
             description='Download')
 
         content = [
@@ -257,7 +257,7 @@ class View:
                     hbox_scattered(
                         self.aggregation_previous_btn,
                         self.aggregate_btn,
-                        self.aggregation_download_btn,
+                        self.aggregated_download_btn,
                         self.citation_btn,
                         self.aggregation_next_btn,
                     ),

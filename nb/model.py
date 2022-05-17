@@ -83,6 +83,8 @@ class Model:
 
         self.time_series_info = ComputedProp()
 
+        self.aggregated_download_file_name = ComputedProp()
+
         logger.info('Data load completed')
 
     def get_data_file_path(self):

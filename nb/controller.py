@@ -80,7 +80,7 @@ class Controller():
             SyncedProp() \
                 << ~model.selected_combinable \
                 >> (view.aggregation_next_btn, dict(prop='disabled', sync=True)) \
-                >> (view.aggregation_download_btn, dict(prop='disabled', sync=True)) \
+                >> (view.aggregated_download_btn, dict(prop='disabled', sync=True)) \
                 >> (view.citation_btn, dict(prop='disabled', sync=True))
 
             model.selection_info \
@@ -115,6 +115,19 @@ class Controller():
             model.use_weightmap \
                 << (view.aggregation_options, dict(name="op")) \
                 >> (lambda op: op == "wa")
+
+            model.aggregated_download_file_name \
+                << (view.aggregation_options, dict(name="op")) \
+                << (model.start_year, dict(name="start")) \
+                << (model.end_year, dict(name="end")) \
+                << (model.selected_files, dict(name="files")) \
+                >> (lambda files, start, end, op: f"{get_base_from_year_path(os.path.basename(files[0]))}_{start}_{end}_{op}.csv"
+                    if files else "unnamed.csv")
+
+            SyncedProp() \
+                << (model.aggregated_download_file_name, dict(sync=True)) \
+                >> (view.aggregated_download_btn, dict(prop="filename", sync=True))
+
 
             view.aggregate_btn.on_click(self.cb_aggregate)
 
