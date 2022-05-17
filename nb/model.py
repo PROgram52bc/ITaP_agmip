@@ -49,6 +49,8 @@ class Model:
         # 'agmip_files': [..., ...]
         self.selection_info = ComputedProp()
 
+        self.raw_download_file_name = ComputedProp()
+
         ######################
         #  Data Aggregation  #
         ######################

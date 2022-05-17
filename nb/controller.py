@@ -13,7 +13,7 @@ import numpy as np
 import os
 import re
 from lib.utils import get_yield_variable, get_colormap, get_dir_content, \
-    can_combine, get_combine_info, combine_nc4, get_summary_info
+    can_combine, get_combine_info, combine_nc4, get_summary_info, get_base_from_year_path
 import netCDF4
 import json
 import csv
@@ -89,6 +89,17 @@ class Controller():
                 << (model.radio_selections_info, dict(name="model_info")) \
                 >> (lambda start, end, model_info: {'Year Range': f"{start}-{end}", **model_info})
 
+            model.raw_download_file_name \
+                << (model.start_year, dict(name="start")) \
+                << (model.end_year, dict(name="end")) \
+                << (model.selected_files, dict(name="files")) \
+                >> (lambda files, start, end: f"{get_base_from_year_path(os.path.basename(files[0]))}_{start}_{end}.zip"
+                    if files else "unnamed.zip")
+
+            SyncedProp() \
+                << (model.raw_download_file_name, dict(sync=True)) \
+                >> (view.raw_download_btn, dict(prop="filename", sync=True))
+
             ######################
             #  Data Aggregation  #
             ######################
@@ -104,11 +115,6 @@ class Controller():
             model.use_weightmap \
                 << (view.aggregation_options, dict(name="op")) \
                 >> (lambda op: op == "wa")
-
-            # just hide it using conditional variable
-            # SyncedProp() \
-            #     << (~model.use_weightmap | ~model.selected_combinable) \
-            #     >> (view.weight_map_select_upload, dict(prop='disabled', sync=True))
 
             view.aggregate_btn.on_click(self.cb_aggregate)
 
@@ -149,12 +155,6 @@ class Controller():
             SyncedProp() \
                 << (model.selected_files, dict(sync=True, trans=lambda fs: not bool(fs))) \
                 >> (view.raw_download_btn, dict(prop='disabled', sync=True))
-
-            # TODO: map to download file <2022-04-08, David Deng> #
-            # SyncedProp() \
-            #     << (view.folder_file_multi_select, dict(sync=True)) \
-            #     >> (view.raw_download_btn, dict(prop="filename"))
-
 
             # TODO: Fix Choropleth so that can automatically trigger update upon changing choro_data without creating new instance?
             # This is also challenging because Choropleth's choro_data attribute is very picky. E.g. no empty value allowed, etc.
@@ -234,7 +234,7 @@ class Controller():
             str(start_year),
             str(end_year),
             yield_var,
-            "out.csv",
+            "out.csv", # use dedicated name when cache is implemented
             "lon",
             "lat",
             crop_name,

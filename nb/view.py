@@ -148,7 +148,6 @@ class View:
 
         # download button
         self.raw_download_btn = DownloadButton(
-            # TODO: name the zip file <2022-04-12, David Deng> #
             filename="unnamed.zip",
             contents=lambda: zipped(model.selected_files.value),
             description='Download')
@@ -197,11 +196,6 @@ class View:
         '''Create widgets for selection tab content'''
 
         self.aggregate_btn = widgets.Button(description="Aggregate and Render Map")
-
-        # TODO:
-        # store the generated file and enable download in the map page
-        # Separate aggregate and render?
-        # self.aggregated_download_btn = DownloadButton(filename='aggregated.csv', contents=lambda: b'Empty', description='Download')
 
         # static dropdown
         weightmaps = get_dir_content(Const.WEIGHT_MAP_DIR)
