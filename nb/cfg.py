@@ -136,14 +136,15 @@ class Const:
     }
 
     # Selection tab
-    RAW_DATA_DIR = 'data/raw/'
-    COMBINED_CACHE_DIR = 'cache/combined/'
-    AGGREGATED_CACHE_DIR = 'cache/aggregated/'
-    WEIGHT_MAP_DIR = 'data/weightmap/'
-    WEIGHT_MAP_UPLOAD_DIR = 'cache/weightmaps/'
+    RAW_DATA_DIR = 'data/raw'
+    COMBINED_CACHE_DIR = 'cache/combined'
+    AGGREGATED_CACHE_DIR = 'cache/aggregated'
+    WEIGHT_MAP_DIR = 'data/weightmap'
+    WEIGHT_MAP_UPLOAD_DIR = 'cache/weightmaps'
+    R_SCRIPT_DIR = 'lib/rfunctions'
 
-    REGION_MAP_DIR = 'data/regionmap/'
-    REGION_MAP_UPLOAD_DIR = 'cache/regionmaps/'
+    REGION_MAP_DIR = 'data/regionmap'
+    REGION_MAP_UPLOAD_DIR = 'cache/regionmaps'
 
     AGGREGATION_OPTIONS = [
         ("Regional Production (in metric tons)", 'pr'),

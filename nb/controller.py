@@ -238,8 +238,8 @@ class Controller():
 
         cmd = [
             "Rscript",
-            "examples/rfunctions/agmip.run.r",
-            "examples/rfunctions/agmip.fns.r",
+            f"{Const.R_SCRIPT_DIR}/agmip.run.r",
+            f"{Const.R_SCRIPT_DIR}/agmip.fns.r",
             input_file,
             regionmap_file,
             aggregation_option,
