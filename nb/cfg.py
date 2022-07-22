@@ -15,7 +15,7 @@ class Const:
     # General
     APP_TITLE = "AgMIP Tool: A GEOSHARE tool for aggregating outputs from the AgMIP's Global Grid (Phase 3)"
     CSS_JS_HTML = 'nb/custom.html'
-    LOGO_IMAGE = 'examples/agmip2.jpg'
+    LOGO_IMAGE = 'assets/agmip2.jpg'
     TAB_TITLES = [
         'Welcome',
         'Data Selection',
@@ -23,7 +23,7 @@ class Const:
         'Data Visualization']
 
     # Welcome tab
-    MANUAL_PATH = 'examples/user_manual.pdf'
+    MANUAL_PATH = 'assets/user_manual.pdf'
     USING_TEXT = f'''
     <h2>About This Tool</h2>
     <p>
@@ -139,10 +139,10 @@ class Const:
     RAW_DATA_DIR = 'data/raw/'
     COMBINED_CACHE_DIR = 'cache/combined/'
     AGGREGATED_CACHE_DIR = 'cache/aggregated/'
-    WEIGHT_MAP_DIR = 'examples/weightmap/'
+    WEIGHT_MAP_DIR = 'data/weightmap/'
     WEIGHT_MAP_UPLOAD_DIR = 'cache/weightmaps/'
 
-    REGION_MAP_DIR = 'examples/regionmap/'
+    REGION_MAP_DIR = 'data/regionmap/'
     REGION_MAP_UPLOAD_DIR = 'cache/regionmaps/'
 
     AGGREGATION_OPTIONS = [

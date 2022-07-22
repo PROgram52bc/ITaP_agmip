@@ -251,7 +251,7 @@ class Controller():
             "lon",
             "lat",
             crop_name,
-            "examples/weightmap/"
+            Const.WEIGHT_MAP_DIR,
         ]
         result = subprocess.run(cmd, capture_output=True)
         logger.info(" ".join(cmd))
