@@ -8,11 +8,11 @@ from matplotlib import pyplot as plt
 import ipywidgets as widgets
 from ipyleaflet import Choropleth, WidgetControl
 import subprocess
-from lib import SyncedProp
+from lib.python import SyncedProp
 import numpy as np
 import os
 import re
-from lib.utils import get_yield_variable, get_colormap, get_dir_content, \
+from lib.python.utils import get_yield_variable, get_colormap, get_dir_content, \
     can_combine, get_combine_info, combine_nc4, get_summary_info, get_base_from_year_path
 import netCDF4
 import json

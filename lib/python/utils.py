@@ -8,7 +8,7 @@ import pandas as pd
 import re
 import io
 from zipfile import ZipFile
-from lib.prop import conditional_widget, displayable
+from lib.python.prop import conditional_widget, displayable
 
 # For DownloadButton
 import base64

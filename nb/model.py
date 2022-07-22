@@ -5,7 +5,7 @@ import os
 import csv
 import glob
 import pandas as pd
-from lib import SyncedProp, ComputedProp, Prop
+from lib.python import SyncedProp, ComputedProp, Prop
 import json
 
 class Model:

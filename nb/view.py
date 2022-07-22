@@ -6,11 +6,11 @@ from ipyleaflet import Map, Marker, Popup, WidgetControl, Choropleth
 from IPython.display import HTML, display, clear_output, FileLink
 import logging
 from branca.colormap import linear
-from lib.prop import displayable
-from lib.utils import get_dir_content, DownloadButton, get_colormap, is_float, zipped, conditional_widget, get_citation, remap_dict_keys, labeled_widget, hbox_scattered
+from lib.python.prop import displayable
+from lib.python.utils import get_dir_content, DownloadButton, get_colormap, is_float, zipped, conditional_widget, get_citation, remap_dict_keys, labeled_widget, hbox_scattered
 import matplotlib.pyplot as plt
 import numpy as np
-from lib.upload import SelectOrUpload
+from lib.python.upload import SelectOrUpload
 
 
 class View:
