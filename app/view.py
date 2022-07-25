@@ -128,23 +128,40 @@ class View:
 
     def data_content(self):
         '''Show data tab content'''
-        self.radios = [widgets.RadioButtons(
-            options=category['options'],
-            # TODO: move style to custom.html <2022-04-07, David Deng> #
-            style={'description_width': 'auto'},
-            layout={'overflow': 'hidden', 'height': 'auto', 'width': 'auto'},
-            description=category['label']
-        ) for category in Const.DATA_CATEGORIES]
+        self.radios = [
+            labeled_widget(
+                widgets.RadioButtons(
+                    options=category['options'],
+                    # TODO: move style to custom.html <2022-04-07, David Deng> #
+                    # style={'description_width': 'auto'},
+                    layout={'overflow': 'hidden', 'height': 'auto', 'width': 'auto'},
+                    # description=category['label']
+                ),
+                category['label'],
+                level=4
+            )
+            for category in Const.DATA_CATEGORIES
+        ]
 
-        # Hard-coded layout
-        self.radio_layout = widgets.GridspecLayout(5, 4)
-        self.radio_layout[:3, 0] = self.radios[0]
-        self.radio_layout[:3, 1] = self.radios[1]
-        self.radio_layout[:3, 2] = self.radios[2]
-        self.radio_layout[3:, 0] = self.radios[3]
-        self.radio_layout[3:, 1] = self.radios[4]
-        self.radio_layout[3:, 2] = self.radios[5]
-        self.radio_layout[:, 3] = self.radios[6]
+        self.radio_layout = widgets.GridspecLayout(2, 3)
+        self.radio_layout[:, 0] = self.radios[0]
+        self.radio_layout[0, 1] = self.radios[1]
+        self.radio_layout[1, 1] = self.radios[2]
+        self.radio_layout[:, 2] = self.radios[3]
+        # self.radio_layout[3:, 0] = self.radios[3]
+        # self.radio_layout[3:, 1] = self.radios[4]
+        # self.radio_layout[3:, 2] = self.radios[5]
+        # self.radio_layout[:, 3] = self.radios[6]
+
+        # # Hard-coded layout
+        # self.radio_layout = widgets.GridspecLayout(5, 4)
+        # self.radio_layout[:3, 0] = self.radios[0]
+        # self.radio_layout[:3, 1] = self.radios[1]
+        # self.radio_layout[:3, 2] = self.radios[2]
+        # self.radio_layout[3:, 0] = self.radios[3]
+        # self.radio_layout[3:, 1] = self.radios[4]
+        # self.radio_layout[3:, 2] = self.radios[5]
+        # self.radio_layout[:, 3] = self.radios[6]
 
         # download button
         self.raw_download_btn = DownloadButton(
@@ -173,7 +190,7 @@ class View:
             #     ]),
             self.section(
                 "Data Selection", [
-                    labeled_widget(self.radio_layout, "Select Category"),
+                    labeled_widget(self.radio_layout, "Select Model-Crop Combinations"),
                     labeled_widget(
                     widgets.VBox([
                         self.select_all,

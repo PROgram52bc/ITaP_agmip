@@ -44,52 +44,84 @@ class Const:
     </p>'''
 
     DATA_CATEGORIES = [
-        {"label": "Crop Model", "options": [
-            "EPIC",
-            "GEPIC",
-            "IMAGE_LEITAP",
-            "LPJ-GUESS",
+        {"label": "Global Gridded Crop Models (GGCM)", "options": [
+            "AquaCropEarthAlternatives (ACEA)",
+            "CROVER",
+            "CYGMA (1p74)",
+            "DSSAT-Pythia",
+            "EPIC-IIASA",
+            "ISAM",
+            "LandscapeDNDC",
             "LPJmL",
             "pDSSAT",
-            "PEGASUS",
+            "PEPIC",
+            "PROMET",
+            "SIMPLACE-LINTUL5+",
         ]},
-        {"label": "GCM", "options": [
-            "GFDL-ESM2M",
-            "HadGEM2-ES",
-            "IPSL-CM5A-LR",
-            "MIROC-ESM-CHEM",
-            "NorESM1-M",
+        {"label": "Global Circulation Models (GCM)", "options": [
+            "GFDL-ESM4",
+            "IPSL-CM6A-LR",
+            "MPI-ESM1-2-HR",
+            "MRI-ESM2-0",
+            "UKESM1-0-LL",
         ]},
-        {"label": "RCP", "options": [
-            "hist",
-            "rcp2p6",
-            "rcp4p5",
-            "rcp6p0",
-            "rcp8p5",
+        {"label": "Representative Concentration Pathways (RCP)", "options": [
+            "RCP2.6 (SSP126)",
+            "RCP8.5 (SSP585)",
         ]},
-        {"label": "SSP", "options": [
-            "ssp2",
-        ]},
-        {"label": "CO2", "options": [
-            "co2",
-            "noco2",
-        ]},
-        {"label": "IRR", "options": [
-            "firr",
-            "noirr",
-        ]},
-        {"label": "Crop", "options": [
-            "maize",
-            "managed_grass",
-            "millet",
-            "others",
-            "rapeseed",
-            "rice",
-            "sorghum",
-            "soy",
-            "sugarcane",
-            "tea",
-            "wheat", ]}
+        {"label": "Crops", "options": [
+            "Wheat",
+            "Maize",
+            "Soybean",
+            "Rice",
+        ]}
+
+        # {"label": "Crop Model", "options": [
+        #     "EPIC",
+        #     "GEPIC",
+        #     "IMAGE_LEITAP",
+        #     "LPJ-GUESS",
+        #     "LPJmL",
+        #     "pDSSAT",
+        #     "PEGASUS",
+        # ]},
+        # {"label": "GCM", "options": [
+        #     "GFDL-ESM2M",
+        #     "HadGEM2-ES",
+        #     "IPSL-CM5A-LR",
+        #     "MIROC-ESM-CHEM",
+        #     "NorESM1-M",
+        # ]},
+        # {"label": "RCP", "options": [
+        #     "hist",
+        #     "rcp2p6",
+        #     "rcp4p5",
+        #     "rcp6p0",
+        #     "rcp8p5",
+        # ]},
+        # {"label": "SSP", "options": [
+        #     "ssp2",
+        # ]},
+        # {"label": "CO2", "options": [
+        #     "co2",
+        #     "noco2",
+        # ]},
+        # {"label": "IRR", "options": [
+        #     "firr",
+        #     "noirr",
+        # ]},
+        # {"label": "Crop", "options": [
+        #     "maize",
+        #     "managed_grass",
+        #     "millet",
+        #     "others",
+        #     "rapeseed",
+        #     "rice",
+        #     "sorghum",
+        #     "soy",
+        #     "sugarcane",
+        #     "tea",
+        #     "wheat", ]}
     ]
 
     # TODO: refactor those maps <2022-05-03, David Deng> #
