@@ -45,7 +45,7 @@ class Const:
 
     DATA_CATEGORIES = [
         {"label": "Global Gridded Crop Models (GGCM)", "options": [
-            "AquaCropEarthAlternatives (ACEA)",
+            "AquaCropEarth@lternatives (ACEA)",
             "CROVER",
             "CYGMA (1p74)",
             "DSSAT-Pythia",
