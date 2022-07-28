@@ -239,7 +239,11 @@ def get_citation(selection_info, aggregation_info):
 
 def labeled_widget(w, title, level=3):
     """ add a heading to the widget """
-    return widgets.VBox([ widgets.HTML(f"<h{level}>{title}</h{level}>"), w ])
+    ret = widgets.VBox([ widgets.HTML(f"<h{level}>{title}</h{level}>"), w ])
+    ret._title = title
+    ret._widget = w
+    ret._level = level
+    return ret
 
 def hbox_scattered(*items):
     """Create a horizontal list of items

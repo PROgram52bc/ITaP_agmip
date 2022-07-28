@@ -33,11 +33,11 @@ class Controller():
             ####################
 
             # model.radio_selections -> view.radios
-            for radio in view.radios:
-                model.radio_selections[radio.description] @ radio
+            for i, radio in enumerate(view.radios):
+                model.radio_selections[i][1] @ radio._widget
 
             # model.data_file_path, model.radio_selections_info
-            for category, prop in model.radio_selections.items():
+            for category, prop in model.radio_selections:
                 model.radio_selections_info << (prop, dict(name=category))
                 model.data_file_path << prop # calculating data path doesn't need the name
             # TODO: refactor the method below into a lambda <2022-05-03, David Deng> #

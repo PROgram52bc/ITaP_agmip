@@ -25,8 +25,8 @@ class Model:
         #  Data Selection  #
         ####################
 
-        # an ordered dict of SyncedProp, indicating the crop selection for each category
-        self.radio_selections = { category['label']: SyncedProp(value=None) for category in Const.DATA_CATEGORIES }
+        # a list of (category_name: str, prop: SyncedProp), indicating the crop selection for each category
+        self.radio_selections = [ (category['label'], SyncedProp(value=None)) for category in Const.DATA_CATEGORIES ]
         # a dictionary of values
         self.radio_selections_info = ComputedProp()
 
@@ -90,8 +90,8 @@ class Model:
     def get_data_file_path(self):
         """ Get the data file path based on radio_selections """
         # Works because dict is ordered
-        path_segments = [ p.value for p in self.radio_selections.values() ]
+        path_segments = [ p[1].value for p in self.radio_selections ]
         if None in path_segments:
             return None
         else:
-            return os.path.join(Const.RAW_DATA_DIR, *[p.value for p in self.radio_selections.values() if p.value is not None])
+            return os.path.join(Const.RAW_DATA_DIR, *path_segments)
