@@ -33,14 +33,12 @@ class Model:
         # the path to search for input files, based on the radio_selections
         self.data_file_path = ComputedProp()
         # the files available in data_file_path
-        self.folder_file_selection_options = ComputedProp()
+        self.selected_file = ComputedProp()
 
         # whether to select all files in data_file_path
         self.select_all = SyncedProp(value=False)
         # the selected files
         self.selected_files = ComputedProp()
-        # whether selected files are combinable
-        self.selected_combinable = ComputedProp()
 
         # a dictionary summarizing the selection info
         # 'start_year': ..., None if not combinable
@@ -94,4 +92,5 @@ class Model:
         if None in path_segments:
             return None
         else:
-            return os.path.join(Const.RAW_DATA_DIR, *path_segments)
+            # acea_gfdl-esm4_historical_default_production_and_yield_grid.RData
+            return "_".join(path_segments[:-1]) + "_default_production_and_yield_grid.RData"

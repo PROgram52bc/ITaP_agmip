@@ -1,6 +1,7 @@
 # view.py - User interface for app
 # rcampbel@purdue.edu - 2020-07-14
 
+import os
 import ipywidgets as widgets
 from ipyleaflet import Map, Marker, Popup, WidgetControl, Choropleth
 from IPython.display import HTML, display, clear_output, FileLink
@@ -165,8 +166,8 @@ class View:
 
         # download button
         self.raw_download_btn = DownloadButton(
-            filename="unnamed.zip",
-            contents=lambda: zipped(model.selected_files.value),
+            filename="unnamed.RData",
+            contents=lambda: open(os.path.join(Const.RAW_DATA_DIR, model.selected_file.value), "rb").read(),
             description='Download')
 
         # multiselect
@@ -181,25 +182,10 @@ class View:
         self.selection_next_btn = self.get_navigation_button("next", "Next")
 
         content = [
-            # self.section(
-            #     "Info", [
-            #         labeled_widget(conditional_widget(model.selected_files,
-            #                                           displayable(model.selected_files),
-            #                                           widgets.HTML("⚠️ Nothing selected")
-            #                                           ), "Selected files"),
-            #     ]),
             self.section(
                 "Data Selection", [
                     labeled_widget(self.radio_layout, "Select Model-Crop Combinations"),
-                    labeled_widget(
-                    widgets.VBox([
-                        self.select_all,
-                        self.folder_file_multi_select,
-                    ]), "Select Files"
-                    ),
-                    conditional_widget(
-                        ~model.selected_combinable & model.selected_files,
-                        widgets.HTML("⚠️ Please select files with contiguous years in order to proceed.")),
+                    labeled_widget(displayable(model.selected_file), "Selected File"),
                     hbox_scattered(
                         self.selection_previous_btn,
                         self.raw_download_btn,
@@ -249,16 +235,13 @@ class View:
         content = [
             self.section(
                 "Info", [
-                    labeled_widget(conditional_widget(model.selected_files,
-                                                      displayable(model.selected_files),
+                    labeled_widget(conditional_widget(model.selected_file,
+                                                      displayable(model.selected_file),
                                                       widgets.HTML("⚠️ Nothing selected")
-                                                      ), "Selected files"),
-                    conditional_widget(
-                        model.selected_combinable,
-                        widgets.VBox([
-                            labeled_widget(displayable(model.selection_info), "Data Selection Info"),
-                        ]),
-                        widgets.HTML("⚠️ Please select some files with contiguous years in order to aggregate.")),
+                                                      ), "Selected file"),
+                    widgets.VBox([
+                        labeled_widget(displayable(model.selection_info), "Data Selection Info"),
+                    ]),
                 ], collapsed=True),
             self.section(
                 "Data Aggregation", [
@@ -267,7 +250,7 @@ class View:
                         widgets.VBox([
                             self.aggregation_options,
                             conditional_widget(
-                                model.use_weightmap & model.selected_combinable,
+                                model.use_weightmap,
                                 labeled_widget(self.weight_map_select_upload, "Select Weight Map", 4))
                         ]),
                         "Choose Aggregation Options"),

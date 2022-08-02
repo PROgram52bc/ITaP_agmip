@@ -44,12 +44,12 @@ class Controller():
             model.data_file_path >> model.get_data_file_path
             model.radio_selections_info >> (lambda **kwargs: kwargs) # output a dictionary
 
-            model.folder_file_selection_options \
+            model.selected_file \
                 << (model.data_file_path, dict(name="path")) \
-                >> (lambda path: get_dir_content(path))
+                >> (lambda path: path if path in get_dir_content(Const.RAW_DATA_DIR) else None)
 
             SyncedProp() \
-                << (model.folder_file_selection_options, dict(sync=True)) \
+                << (model.selected_file, dict(sync=True)) \
                 >> (view.folder_file_multi_select, dict(prop='options', sync=True))
 
             model.select_all \
@@ -64,40 +64,14 @@ class Controller():
                 >> (lambda path, select_all, selected_files, all_files:
                     [ os.path.join(path, file) for file in (all_files if select_all else selected_files) ])
 
-            model.selected_combinable \
-                << (model.selected_files, dict(name='files')) \
-                >> (lambda files: can_combine(files))
-
-            SyncedProp() \
-                << ~model.selected_combinable \
-                >> (view.selection_next_btn, dict(prop='disabled', sync=True)) \
-                >> (view.aggregate_btn, dict(prop='disabled', sync=True)) \
-                >> (view.aggregation_options, dict(prop='disabled', sync=True)) \
-                >> (view.aggregate_btn, dict(prop='disabled', sync=True)) \
-                >> (view.region_map_select_upload, dict(prop='disabled', sync=True)) \
-
-            # TODO: bind this to a variable indicating cache is generated <2022-05-04, David Deng> #
-            SyncedProp() \
-                << ~model.selected_combinable \
-                >> (view.aggregation_next_btn, dict(prop='disabled', sync=True)) \
-                >> (view.aggregated_download_btn, dict(prop='disabled', sync=True)) \
-                >> (view.citation_btn, dict(prop='disabled', sync=True))
-
             model.selection_info \
                 << (model.start_year, dict(name="start")) \
                 << (model.end_year, dict(name="end")) \
                 << (model.radio_selections_info, dict(name="model_info")) \
                 >> (lambda start, end, model_info: {'Year Range': f"{start}-{end}", **model_info})
 
-            model.raw_download_file_name \
-                << (model.start_year, dict(name="start")) \
-                << (model.end_year, dict(name="end")) \
-                << (model.selected_files, dict(name="files")) \
-                >> (lambda files, start, end: f"{get_base_from_year_path(os.path.basename(files[0]))}_{start}_{end}.zip"
-                    if files else "unnamed.zip")
-
             SyncedProp() \
-                << (model.raw_download_file_name, dict(sync=True)) \
+                << (model.selected_file, dict(sync=True)) \
                 >> (view.raw_download_btn, dict(prop="filename", sync=True))
 
             ######################
@@ -105,12 +79,10 @@ class Controller():
             ######################
 
             model.start_year \
-                << (model.selected_files, dict(name="files")) \
-                >> (lambda files: get_combine_info(files).get("start_year") if files else None)
+                >> (lambda :None)
 
             model.end_year \
-                << (model.selected_files, dict(name="files")) \
-                >> (lambda files: get_combine_info(files).get("end_year") if files else None)
+                >> (lambda :None)
 
             model.use_weightmap \
                 << (view.aggregation_options, dict(name="op")) \
@@ -166,7 +138,7 @@ class Controller():
                 >> (lambda prod_data, selected_year: prod_data.get(selected_year, None))
 
             SyncedProp() \
-                << (model.selected_files, dict(sync=True, trans=lambda fs: not bool(fs))) \
+                << (model.selected_file, dict(sync=True, trans=lambda f: f is None)) \
                 >> (view.raw_download_btn, dict(prop='disabled', sync=True))
 
             # TODO: Fix Choropleth so that can automatically trigger update upon changing choro_data without creating new instance?
