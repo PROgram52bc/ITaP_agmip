@@ -26,7 +26,7 @@ class View:
 
         # Create module-level singletons
         global logger, log_handler, Const, model, notification
-        from src.cfg import logger, log_handler, Const, model, notification
+        from code.cfg import logger, log_handler, Const, model, notification
 
         # Send app's custom styles (CSS code) down to the browser
         display(HTML(filename=Const.CSS_JS_HTML))

@@ -5,16 +5,16 @@ import logging
 import ipywidgets as widgets
 import threading
 
-from src.model import Model
-from src.view import View
-from src.controller import Controller
+from code.model import Model
+from code.view import View
+from code.controller import Controller
 
 class Const:
     """Store app-wide constants, including values and language text."""
 
     # General
     APP_TITLE = "AgMIP Tool: A GEOSHARE tool for aggregating outputs from the AgMIP's Global Grid (Phase 3)"
-    CSS_JS_HTML = 'src/custom.html'
+    CSS_JS_HTML = 'code/custom.html'
     LOGO_IMAGE = 'assets/agmip2.jpg'
     TAB_TITLES = [
         'Welcome',
