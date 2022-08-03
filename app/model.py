@@ -19,7 +19,7 @@ class Model:
 
         # Create module-level singletons
         global logger, Const
-        from code.cfg import logger, Const
+        from app.cfg import logger, Const
 
         ####################
         #  Data Selection  #

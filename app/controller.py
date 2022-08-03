@@ -25,7 +25,7 @@ class Controller():
 
         # Create module-level singletons
         global model, view, logger, Const, send_notification
-        from code.cfg import model, view, logger, Const, send_notification
+        from app.cfg import model, view, logger, Const, send_notification
 
         try:
             ####################
