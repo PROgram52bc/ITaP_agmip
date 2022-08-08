@@ -68,16 +68,17 @@ class Const:
             ("WFDE5",         "wfde5"),
         ]},
         {"label": "Representative Concentration Pathways (RCP)", "options": [
-            ("RCP2.6 (SSP126)", "ssp126"),
-            ("RCP8.5 (SSP585)", "ssp585"),
-            ("Historical",      "historical"),
-            ("Obsclim",         "obsclim"),
+            ("RCP2.6 (SSP126)",  "ssp126"),
+            ("RCP8.5 (SSP585)",  "ssp585"),
+            ("Historical",       "historical"),
+            ("Observed Climate", "obsclim"),
         ]},
         {"label": "Crops", "options": [
-            ("Wheat",   "wheat"),
-            ("Maize",   "maize"),
-            ("Soybean", "soybean"),
-            ("Rice",    "rice"),
+            ("Maize",        "maize"),
+            ("Spring Wheat", "spring_wheat"),
+            ("Winter Wheat", "winter_wheat"),
+            ("Soybean",      "soybeans"),
+            ("Rice",         "rice"),
         ]}
     ]
 
@@ -108,24 +109,8 @@ class Const:
         "whe": "wheat",
     }
 
-    HUMAN_CROP_NAME = {
-        # ???: "Barley"
-        "maize": "Maize",
-        "managed_grass": "Managed grass",
-        "millet": "Millet",
-        "others": "Others",
-        "rapeseed": "Rapeseed",
-        "rice": "Rice",
-        "sorghum": "Sorghum",
-        "soy": "Soy",
-        # ???: "Sugar beet"
-        "sugarcane": "Sugarcane",
-        "tea": "Tea",
-        "wheat": "Wheat",
-    }
-
     # Selection tab
-    RAW_DATA_DIR = '/data/tools/agmip/nc4/'
+    RAW_DATA_DIR = 'data/rdata/'
     COMBINED_CACHE_DIR = 'cache/combined/'
     AGGREGATED_CACHE_DIR = 'cache/aggregated/'
     WEIGHT_MAP_DIR = 'data/weightmap/'
@@ -136,8 +121,8 @@ class Const:
     REGION_MAP_UPLOAD_DIR = 'cache/regionmaps/'
 
     AGGREGATION_OPTIONS = [
-        ("Regional Production (in metric tons)", 'pr'),
-        ("Regional Yields (metric tons / hectare) Weighted by each Gridcells Havested Area", 'yi'),
+        # ("Regional Production (in metric tons)", 'pr'),
+        # ("Regional Yields (metric tons / hectare) Weighted by each Gridcells Havested Area", 'yi'),
         ("Summary Statistics (mean, median, SD, min, max, and 25%-75% percentiles)", 'st'),
         ("Regional Weighted-Average Yields (metric tons / hectare)", 'wa')
     ]
