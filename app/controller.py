@@ -12,8 +12,7 @@ from lib.python import SyncedProp
 import numpy as np
 import os
 import re
-from lib.python.utils import get_yield_variable, get_colormap, get_dir_content, \
-    can_combine, get_combine_info, combine_nc4, get_summary_info, get_base_from_year_path
+from lib.python.utils import get_yield_variable, get_colormap, get_dir_content, get_summary_info
 import netCDF4
 import json
 import csv
@@ -79,22 +78,18 @@ class Controller():
             ######################
 
             model.start_year \
-                >> (lambda :None)
+                >> (lambda :2016)
 
             model.end_year \
-                >> (lambda :None)
+                >> (lambda :2099)
 
             model.use_weightmap \
                 << (view.aggregation_options, dict(name="op")) \
                 >> (lambda op: op == "wa")
 
             model.aggregated_download_file_name \
-                << (view.aggregation_options, dict(name="op")) \
-                << (model.start_year, dict(name="start")) \
-                << (model.end_year, dict(name="end")) \
-                << (model.selected_files, dict(name="files")) \
-                >> (lambda files, start, end, op: f"{get_base_from_year_path(os.path.basename(files[0]))}_{start}_{end}_{op}.csv"
-                    if files else "unnamed.csv")
+                << (model.selected_file, dict(name="f")) \
+                >> (lambda f: f"{os.path.splitext(f)[0]}.csv")
 
             SyncedProp() \
                 << (model.aggregated_download_file_name, dict(sync=True)) \
@@ -176,21 +171,18 @@ class Controller():
     def cb_aggregate(self, _):
         # input_file = "data/epic_hadgem2-es_hist_ssp2_co2_firr_yield_soy_annual_1980_2010.nc4"
         send_notification("Aggregating data...")
-        # TODO: merge the files, retrieve from cache <2022-04-07, David Deng> #
-        input_files = model.selected_files.value
-        if not input_files:
-            logger.error("Trying to aggregate without an input file selected")
-            return
-        info = get_combine_info(input_files)
-        # TODO: output to cache dir, implement cache? <2022-04-13, David Deng> #
-        combine_nc4(input_files, info['file_name'])
-        input_file = info['file_name']
+        input_file = model.selected_file.value
 
         aggregation_option = view.aggregation_options.value
         weightmap_file = view.weight_map_select_upload.value
         regionmap_file = view.region_map_select_upload.value
+
+        crop = model.radio_selections[-1][1].value
+        logger.info(f"Crop: {crop}")
+
         start_year = model.start_year.value
         end_year = model.end_year.value
+
         if start_year is None:
             logger.error("Trying to aggregate with start year of None")
             return
@@ -198,32 +190,16 @@ class Controller():
             logger.error("Trying to aggregate with end year of None")
             return
 
-        # TODO: refactor this to a method, to be used in citation <2022-03-31, David Deng> #
-        with netCDF4.Dataset(input_file) as f:
-            yield_var = get_yield_variable(f)
-        if yield_var is None:
-            logger.error("Trying to aggregate with yield_var of None")
-            return
-        logger.info(f"yield_var: {yield_var}")
-        crop_name = Const.FULL_CROP_NAME.get(yield_var.lstrip("yield_"), "others")
-        logger.info(f"crop_name: {crop_name}")
-
+        # TODO: add another selection to choose area or tonne <2022-08-08, David Deng> #
+        # TODO: refactor Rscript to take weightmap file directly <2022-08-08, David Deng> #
         cmd = [
             "Rscript",
-            f"{Const.R_SCRIPT_DIR}/agmip.run.r",
-            f"{Const.R_SCRIPT_DIR}/agmip.fns.r",
-            input_file,
+            os.path.join(Const.R_SCRIPT_DIR, "do.r"),
+            os.path.join(Const.RAW_DATA_DIR, input_file),
             regionmap_file,
-            aggregation_option,
-            weightmap_file,
-            str(start_year),
-            str(end_year),
-            yield_var,
-            "out.csv", # use dedicated name when cache is implemented
-            "lon",
-            "lat",
-            crop_name,
-            Const.WEIGHT_MAP_DIR,
+            crop,
+            "area",
+            "out.csv",
         ]
         result = subprocess.run(cmd, capture_output=True)
         logger.info(" ".join(cmd))
