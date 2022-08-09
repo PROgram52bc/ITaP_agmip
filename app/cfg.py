@@ -110,7 +110,7 @@ class Const:
     }
 
     # Selection tab
-    RAW_DATA_DIR = '/data/tools/agmip/nc4/'
+    RAW_DATA_DIR = '/data/tools/agmip/rdata/'
     COMBINED_CACHE_DIR = 'cache/combined/'
     AGGREGATED_CACHE_DIR = 'cache/aggregated/'
     WEIGHT_MAP_DIR = 'data/weightmap/'
