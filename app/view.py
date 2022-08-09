@@ -331,14 +331,14 @@ class View:
             self.choro.colormap = self.colormap
             self.choro.choro_data = choro_data.copy()
 
-    def reset_map_choro(self, data):
+    def reset_map_choro(self, dict_data):
         # similar to refresh_map_choro, except will recreate a new Choropleth object
         # used on initial rendering of the map.
-        if data is None:
+        if dict_data is None:
             logger.info("new data is empty, not resetting map")
             return
 
-        data = list(data.values())
+        data = list(dict_data.values())
         self.colormap = get_colormap(data)
 
         # first remove the old layer.
@@ -347,7 +347,7 @@ class View:
         # create a new choropleth layer
         self.choro = Choropleth(
             geo_data=model.geodata,
-            choro_data=data,
+            choro_data=dict_data,
             colormap=self.colormap,
             hover_style={'color': 'white', 'dashArray': '0', 'fillOpacity': 0.5},
             style={'fillOpacity': 0.8, 'dashArray': '5, 5'},

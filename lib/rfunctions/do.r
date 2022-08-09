@@ -176,8 +176,7 @@ grid.agg <- function(data2agg=NULL, region.map=NULL, weight.map=NULL){
 ## agg.wrapper: runs weight.map, yielddat, and yielddat.agg
 ## sequentially. The idea is that the four arguments can be taken
 ## directly from the GUI:
-agg.wrapper <- function(file, crop, region.map, weights){
-    weight.map <- read.weights(crop, weights)
+agg.wrapper <- function(file, crop, region.map, weight.map){
     yielddat <- read.AgMIP.RData( file = file ,crop = crop )
     yielddat.agg <- grid.agg( data2agg = yielddat,
                              region.map= region.map,
@@ -187,15 +186,15 @@ agg.wrapper <- function(file, crop, region.map, weights){
 
 args <- commandArgs(TRUE)
 rdata_file <- args[1]
-worldid_file <- args[2]
-crop <- args[3]
-weights <- args[4]
+regionmap_file <- args[2]
+weightmap_file <- args[3]
+crop <- args[4]
 output_file <- args[5]
 
 agg <- agg.wrapper(file = rdata_file,
                     crop = crop,
-                    region.map = read.csv(worldid_file),
-                    weights = weights)
+                    region.map = read.csv(regionmap_file),
+                    weight.map = read.csv(weightmap_file))
 
 head(agg)
 write.csv(agg, file=output_file)

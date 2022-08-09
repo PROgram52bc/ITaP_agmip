@@ -190,15 +190,13 @@ class Controller():
             logger.error("Trying to aggregate with end year of None")
             return
 
-        # TODO: add another selection to choose area or tonne <2022-08-08, David Deng> #
-        # TODO: refactor Rscript to take weightmap file directly <2022-08-08, David Deng> #
         cmd = [
             "Rscript",
             os.path.join(Const.R_SCRIPT_DIR, "do.r"),
             os.path.join(Const.RAW_DATA_DIR, input_file),
             regionmap_file,
+            weightmap_file,
             crop,
-            "area",
             "out.csv",
         ]
         result = subprocess.run(cmd, capture_output=True)
